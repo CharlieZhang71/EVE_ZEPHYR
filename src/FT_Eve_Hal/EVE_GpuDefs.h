@@ -1,0 +1,1605 @@
+/**
+ * This source code ("the Software") is provided by Bridgetek Pte Ltd
+ * ("Bridgetek") subject to the licence terms set out
+ *   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
+ * You must read the Licence Terms before downloading or using the Software.
+ * By installing or using the Software you agree to the Licence Terms. If you
+ * do not agree to the Licence Terms then do not download or use the Software.
+ *
+ * Without prejudice to the Licence Terms, here is a summary of some of the key
+ * terms of the Licence Terms (and in the event of any conflict between this
+ * summary and the Licence Terms then the text of the Licence Terms will
+ * prevail).
+ *
+ * The Software is provided "as is".
+ * There are no warranties (or similar) in relation to the quality of the
+ * Software. You use it at your own risk.
+ * The Software should not be used in, or for, any medical device, system or
+ * appliance. There are exclusions of Bridgetek liability for certain types of loss
+ * such as: special loss or damage; incidental loss or damage; indirect or
+ * consequential loss or damage; loss of income; loss of business; loss of
+ * profits; loss of revenue; loss of contracts; business interruption; loss of
+ * the use of money or anticipated savings; loss of information; loss of
+ * opportunity; loss of goodwill or reputation; and/or loss of, damage to or
+ * corruption of data.
+ * There is a monetary cap on Bridgetek's liability.
+ * The Software may have subsequently been amended by another user and then
+ * distributed by that other user ("Adapted Software").  If so that user may
+ * have additional licence terms that apply to those amendments. However, Bridgetek
+ * has no liability in relation to those amendments.
+ */
+
+/*
+
+Defines EVE hardware values.
+
+This header is separated and included last
+in case of conflicts with other libraries.
+
+Expects BT_82X_ENABLE, BT_81XA_ENABLE, BT_81X_ENABLE, BT_88X_ENABLE, FT_81X_ENABLE, or FT_80X_ENABLE
+to be defined. If not, multi target compilation is assumed.
+
+*/
+
+#ifndef EVE_GPU_DEFS__H
+#define EVE_GPU_DEFS__H
+
+#ifndef ESD_ENUM
+#define ESD_ENUM(name, ...)
+#define ESD_END()
+#endif
+
+#if !defined(EVE_MULTI_GRAPHICS_TARGET) \
+    && !defined(FT_80X_ENABLE)          \
+    && !defined(FT_81X_ENABLE)          \
+    && !defined(BT_88X_ENABLE)          \
+    && !defined(BT_81X_ENABLE)          \
+    && !defined(BT_81XA_ENABLE)			\
+	&& !defined(BT_82X_ENABLE)
+#define EVE_MULTI_GRAPHICS_TARGET
+#endif
+
+/* Definitions used for FT800 coprocessor command buffer */
+#define EVE_DL_COUNT (EVE_CHIPID >= EVE_BT820 ? 4096UL : 2048UL)
+#define EVE_DL_SIZE (4 * EVE_DL_COUNT) /* 8kB/16kB Display List buffer size */
+#define EVE_CMD_FIFO_COUNT (EVE_CHIPID >= EVE_BT820 ? 4096UL : 1024UL)
+#define EVE_CMD_FIFO_SIZE (4 * EVE_CMD_FIFO_COUNT) /* 4kB/16kB coprocessor FIFO size */
+#define EVE_CMD_FIFO_MASK (EVE_CMD_FIFO_SIZE - 1)
+#define EVE_CMD_FIFO_ALIGNMENT_MASK (EVE_CMD_FIFO_SIZE - ((4) - 1))
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define EVE_DL_COUNT_MAX (4096UL)
+#define EVE_CMD_FIFO_COUNT_MAX (4096UL)
+#else
+#define EVE_DL_COUNT_MAX (2048UL)
+#define EVE_CMD_FIFO_COUNT_MAX (1024UL)
+#endif
+#define EVE_DL_SIZE_MAX (4 * EVE_DL_COUNT_MAX) /* 8kB/16kB Display List buffer size */
+#define EVE_CMD_FIFO_SIZE_MAX (4 * EVE_CMD_FIFO_COUNT_MAX) /* 4kB/16kB coprocessor FIFO size */
+#define EVE_CMD_FAULT(rp) (rp & 0x3)
+
+#define EVE_FLASH_WRITE_ALIGN (256)
+#define EVE_FLASH_UPDATE_ALIGN (4096)
+#define EVE_FLASH_READ_ALIGN (64)
+#define EVE_FLASH_FIRMWARE_SIZE (4096)
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+typedef uint32_t eve_tag_t; /* 24-bit display list TAG */
+#define EVE_TAG_MASK (EVE_CHIPID >= EVE_BT820 ? 0xFFFFFFUL : 0xFFUL) /* 24-bit TAG mask for BT820 and later, 8-bit for earlier chips */
+#else
+typedef uint8_t eve_tag_t; /* 8-bit display list TAG */
+#define EVE_TAG_MASK (0xFFUL) /* 8-bit TAG mask */
+#endif
+
+/**************
+** Addresses **
+**************/
+
+#define RAM_G 0UL
+#define ROM_CHIPID 786432UL
+#define RAM_ERR_REPORT (EVE_CHIPID >= EVE_BT820 ? 2130724864UL : 0x309800UL)
+#define RAM_G_RESERVED (EVE_CHIPID >= EVE_BT820 ? 0x280000UL : 0UL)
+
+#if defined(EVE_MULTI_GRAPHICS_TARGET)
+
+#define EVE_HAL_REG_ID (phost->GpuDefs->RegId)
+#define EVE_HAL_REG_CPURESET (phost->GpuDefs->RegCpuReset)
+#define EVE_HAL_REG_HCYCLE (phost->GpuDefs->RegHCycle)
+#define EVE_HAL_REG_PCLK_POL (phost->GpuDefs->RegPClkPol)
+#define EVE_HAL_REG_TAG_X (phost->GpuDefs->RegTagX)
+#define EVE_HAL_REG_VOL_SOUND (phost->GpuDefs->RegVolSound)
+#define EVE_HAL_REG_J1_COLD (phost->GpuDefs->RegJ1Cold)
+#define EVE_HAL_REG_J1_INT (phost->GpuDefs->RegJ1Int)
+#define EVE_HAL_REG_INT_FLAGS (phost->GpuDefs->RegIntFlags)
+#define EVE_HAL_REG_CMD_READ (phost->GpuDefs->RegCmdRead)
+#define EVE_HAL_REG_CTOUCH_TOUCH0_XY (phost->GpuDefs->RegCTouchTouch0XY)
+#define EVE_HAL_REG_CTOUCH_TOUCH1_XY (phost->GpuDefs->RegCTouchTouch1XY)
+#define EVE_HAL_REG_CTOUCH_TOUCH2_XY (phost->GpuDefs->RegCTouchTouch2XY)
+#define EVE_HAL_REG_CTOUCH_TOUCH3_XY (phost->GpuDefs->RegCTouchTouch3XY)
+#define EVE_HAL_REG_TOUCH_TAG_XY (phost->GpuDefs->RegTouchTagXY)
+#define EVE_HAL_REG_TOUCH_TRANSFORM_A (phost->GpuDefs->RegTouchTransformA)
+#define EVE_HAL_REG_CRC (phost->GpuDefs->RegCrc)
+#define EVE_HAL_REG_TRIM (phost->GpuDefs->RegTrim)
+#define EVE_HAL_REG_EJPG_READY (phost->GpuDefs->RegEJpgReady)
+#define EVE_HAL_REG_EJPG_DEBUG (phost->GpuDefs->RegEJpgDebug)
+#define EVE_HAL_REG_DATESTAMP (phost->GpuDefs->RegDatestamp)
+#define EVE_HAL_REG_CMDB_WRITE (phost->GpuDefs->RegCmdBWrite)
+#define EVE_HAL_REG_CMDB_SPACE (phost->GpuDefs->RegCmdBSpace)
+#define EVE_HAL_REG_ESPIM_DUMMY (phost->GpuDefs->RegESpimDummy)
+#define EVE_HAL_REG_FLASH_DTR (phost->GpuDefs->RegFlashDtr)
+#define EVE_HAL_REG_TRACKER (phost->GpuDefs->RegTracker)
+
+#define RAM_DL (phost->GpuDefs->RamDl)
+#define ROMFONT_TABLEADDRESS (phost->GpuDefs->RomFontTableAddress)
+
+#define RAM_G_SIZE_MAX (phost->GpuDefs->RamGSizeMax)
+#define RAM_G_SIZE (phost->RamGSize)
+#define RAM_G_AVAILABLE (phost->RamGAvailable)
+#define LOW_FREQ_BOUND (phost->GpuDefs->LowFreqBound)
+
+#define BITMAP_ADDR_MASK (phost->GpuDefs->BitmapAddrMask)
+#define PALETTE_ADDR_MASK (phost->GpuDefs->PaletteAddrMask)
+#define SCISSOR_XY_SHIFT (phost->GpuDefs->ScissorSizeShift - 1)
+#define SCISSOR_XY_MASK (((1UL << phost->GpuDefs->ScissorSizeShift) - 1UL) >> 1)
+#define SCISSOR_SIZE_SHIFT (phost->GpuDefs->ScissorSizeShift)
+#define SCISSOR_SIZE_MASK ((1UL << phost->GpuDefs->ScissorSizeShift) - 1UL)
+#define TAG_DL_MASK (phost->GpuDefs->TagDlMask)
+#define BITMAP_HANDLE_MASK (phost->GpuDefs->BitmapHandleMask)
+#define BITMAP_LAYOUT_H_STRIDE_MASK (phost->GpuDefs->BitmapLayoutHStrideMask)
+
+#else
+
+#if defined(BT_82X_ENABLE)
+
+#define RAM_G_SIZE_MAX (1024L * 1024L * 1024L)
+#define RAM_G_SIZE (phost->RamGSize)
+#define RAM_G_AVAILABLE (phost->RamGAvailable)
+
+#elif defined(FT_81X_ENABLE) || defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE)
+
+#define RAM_G_SIZE_MAX (1024 * 1024L)
+#define RAM_G_SIZE RAM_G_SIZE_MAX
+#define RAM_G_AVAILABLE RAM_G_SIZE_MAX
+
+#elif defined(FT_80X_ENABLE) || defined(BT_88X_ENABLE)
+
+#define RAM_G_SIZE_MAX (256 * 1024L)
+#define RAM_G_SIZE RAM_G_SIZE_MAX
+#define RAM_G_AVAILABLE RAM_G_SIZE_MAX
+
+#endif
+
+#if defined(FT_81X_ENABLE) || defined(BT_88X_ENABLE) || defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE)
+
+#define EVE_HAL_REG_ID 3153920UL
+#define EVE_HAL_REG_CPURESET 3153952UL
+#define EVE_HAL_REG_J1_INT 3154084UL
+#define EVE_HAL_REG_CMD_READ 3154168UL
+#define EVE_HAL_REG_TOUCH_TRANSFORM_A 3154256UL
+#define EVE_HAL_REG_CRC 3154296UL
+#define EVE_HAL_REG_TRIM 3154304UL
+#define EVE_HAL_REG_CTOUCH_TOUCH2_XY 3154316UL
+#define EVE_HAL_REG_DATESTAMP 3155300UL
+#define EVE_HAL_REG_CMDB_SPACE 3155316UL
+#define EVE_HAL_REG_TRACKER 3182592UL
+
+#define RAM_DL 3145728UL
+#define ROMFONT_TABLEADDRESS 3145724UL
+
+#define LOW_FREQ_BOUND 58800000L // 98% of 60Mhz
+
+#define SCISSOR_XY_SHIFT 11
+#define SCISSOR_XY_MASK 2047UL
+#define SCISSOR_SIZE_SHIFT 12
+#define SCISSOR_SIZE_MASK 4095UL
+
+#endif
+
+#if defined(BT_82X_ENABLE)
+
+#define PALETTE_ADDR_MASK 16777215UL
+#define TAG_DL_MASK (16777215UL)
+#define BITMAP_HANDLE_MASK (63UL)
+#define BITMAP_LAYOUT_H_STRIDE_MASK (7UL)
+
+#else
+
+#define PALETTE_ADDR_MASK 4194303UL
+#define TAG_DL_MASK (255UL)
+#define BITMAP_HANDLE_MASK (31UL)
+#define BITMAP_LAYOUT_H_STRIDE_MASK (3UL)
+
+#endif						  
+#if defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE) || defined(BT_82X_ENABLE)
+
+#define BITMAP_ADDR_MASK (16777215UL)
+
+#elif defined(FT_81X_ENABLE) || defined(BT_88X_ENABLE)
+
+#define BITMAP_ADDR_MASK (4194303UL)
+
+#elif defined(FT_80X_ENABLE)
+
+#define EVE_HAL_REG_ID 1057792UL
+#define EVE_HAL_REG_CPURESET 1057820UL
+#define EVE_HAL_REG_J1_INT 1057940UL
+#define EVE_HAL_REG_CMD_READ 1058020UL
+#define EVE_HAL_REG_TOUCH_TRANSFORM_A 1058076UL
+#define EVE_HAL_REG_CRC 1058152UL
+#define EVE_HAL_REG_TRIM 1058156UL
+#define EVE_HAL_REG_CTOUCH_TOUCH2_XY 1058164UL
+#define EVE_HAL_REG_DATESTAMP 1058108UL
+#define EVE_HAL_REG_CMDB_SPACE 0
+#define EVE_HAL_REG_TRACKER 1085440UL
+
+#define RAM_DL 1048576UL
+#define ROMFONT_TABLEADDRESS 1048572UL
+
+#define LOW_FREQ_BOUND 47040000L // 98% of 48Mhz
+
+#define BITMAP_ADDR_MASK 1048575UL
+#define SCISSOR_XY_SHIFT 9
+#define SCISSOR_XY_MASK 511UL
+#define SCISSOR_SIZE_SHIFT 10
+#define SCISSOR_SIZE_MASK 1023UL
+
+#endif
+
+#if defined BT_82X_ENABLE
+
+#define EVE_HAL_REG_ID (2130731008UL)
+#define EVE_HAL_REG_CPURESET (2130731144UL)
+#define EVE_HAL_REG_HCYCLE (2130731148UL)
+#define EVE_HAL_REG_PCLK_POL (2130731192UL)
+#define EVE_HAL_REG_TAG_X (2130731196UL)
+#define EVE_HAL_REG_VOL_SOUND (2130731216UL)
+#define EVE_HAL_REG_J1_COLD (2130731240UL)
+#define EVE_HAL_REG_J1_INT (2130731244UL)
+#define EVE_HAL_REG_INT_FLAGS (2130731264UL)
+#define EVE_HAL_REG_CMD_READ (2130731340UL)
+#define EVE_HAL_REG_CTOUCH_TOUCH0_XY (2130731360UL)
+#define EVE_HAL_REG_CTOUCH_TOUCH1_XY (2130731364UL)
+#define EVE_HAL_REG_CTOUCH_TOUCH2_XY (2130731368UL)
+#define EVE_HAL_REG_CTOUCH_TOUCH3_XY (2130731372UL)
+#define EVE_HAL_REG_TOUCH_TAG_XY (2130731380UL)
+#define EVE_HAL_REG_TOUCH_TRANSFORM_A (2130731420UL)
+#define EVE_HAL_REG_CRC (2130731448UL)
+#define EVE_HAL_REG_TRIM (0xFFFFFFF4) /* not applicable */
+#define EVE_HAL_REG_EJPG_READY (2130731452UL)
+#define EVE_HAL_REG_EJPG_DEBUG (2130732416UL)
+#define EVE_HAL_REG_DATESTAMP (2130732420UL)
+#define EVE_HAL_REG_CMDB_WRITE (2130771968UL)
+#define EVE_HAL_REG_CMDB_SPACE (2130732436UL)
+#define EVE_HAL_REG_ESPIM_DUMMY (2130732488UL)
+#define EVE_HAL_REG_FLASH_DTR (2130732524UL)
+#define EVE_HAL_REG_TRACKER (2130722816UL)
+#define EVE_HAL_REG_PLAY_CONTROL (2130722896UL)
+
+#define RAM_DL 2130739200UL
+#define ROMFONT_TABLEADDRESS 0 /* TODO_BT820 */
+
+#define LOW_FREQ_BOUND 58800000L // 98% of 60Mhz /* TODO_BT820 */
+
+#define SCISSOR_XY_SHIFT 11
+#define SCISSOR_XY_MASK 2047UL
+#define SCISSOR_SIZE_SHIFT 12
+#define SCISSOR_SIZE_MASK 4095UL
+
+#else
+
+#define EVE_HAL_REG_HCYCLE (EVE_HAL_REG_CPURESET + 12UL)
+#define EVE_HAL_REG_PCLK_POL (EVE_HAL_REG_CPURESET + 76UL)
+#define EVE_HAL_REG_TAG_X (EVE_HAL_REG_CPURESET + 84UL)
+#define EVE_HAL_REG_VOL_SOUND (EVE_HAL_REG_CPURESET + 100UL)
+#define EVE_HAL_REG_J1_COLD (EVE_HAL_REG_CPURESET + 128UL)
+#define EVE_HAL_REG_INT_FLAGS (EVE_HAL_REG_J1_INT + 4UL)
+#define EVE_HAL_REG_CTOUCH_TOUCH0_XY (EVE_HAL_REG_CMD_READ + 44UL)
+#define EVE_HAL_REG_CTOUCH_TOUCH1_XY (EVE_HAL_REG_CMD_READ + 36UL)
+#define EVE_HAL_REG_CTOUCH_TOUCH3_XY (EVE_HAL_REG_CTOUCH_TOUCH2_XY + 4UL)
+#define EVE_HAL_REG_TOUCH_TAG_XY (EVE_HAL_REG_CMD_READ + 48UL)
+#define EVE_HAL_REG_EJPG_READY (EVE_HAL_REG_CTOUCH_TOUCH2_XY + 8UL)
+#define EVE_HAL_REG_EJPG_DEBUG (EVE_HAL_REG_CTOUCH_TOUCH2_XY + 976UL)
+#define EVE_HAL_REG_CMDB_WRITE (EVE_HAL_REG_CMDB_SPACE + 4UL)
+#define EVE_HAL_REG_ESPIM_DUMMY (EVE_HAL_REG_CMDB_SPACE + 112UL)
+#define EVE_HAL_REG_FLASH_DTR (EVE_HAL_REG_CMDB_SPACE + 168UL)
+#define EVE_HAL_REG_PLAY_CONTROL (EVE_HAL_REG_TRACKER + 40UL)
+
+#endif
+
+#endif
+
+/* When nothing is touched, the touch tag will report zero. */
+#define EVE_TAG_RELEASED (0)
+
+/* This tag is conventionally used for rendering anything that doesn't have a touch tag,
+ * to distinguish nothing being touched from background touch.
+ * @note Kept at 255 for compatbility with BT81X, even though BT82X range is 24-bit.
+ */
+#define EVE_TAG_NONE (255)															   
+#if defined(FT_80X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define RAM_PAL (RAM_DL + 8192UL)
+#endif
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define RAM_TOP (RAM_DL + 16384UL)
+#endif
+#define RAM_CMD (EVE_CHIPID >= EVE_BT820 ? 2130706432UL : (RAM_DL + 32768UL))
+#define RAM_J1RAM (EVE_CHIPID >= EVE_BT820 ? 2130722816UL : (RAM_DL + 36864UL))
+#define RAM_ROMSUB (EVE_CHIPID >= EVE_BT820 ? 2130868224UL : (EVE_CHIPID == EVE_FT800 ? 1884160UL : (RAM_DL + 40960UL)))
+#define RAM_JTBOOT (EVE_CHIPID >= EVE_BT820 ? 2130726912UL : (RAM_DL + 45056UL))
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define RAM_BIST (RAM_DL + 524288UL)
+#define RAM_COMPOSITE (RAM_DL + 794624UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define RAM_HIMEM (2130724864UL)
+#define RAM_OTPSTAGE (2130725888UL)
+#define RAM_J1CODE (2130837504UL)
+#define ROM_ROMIMAGE (2131755008UL)
+#endif
+
+#define RAM_REG (EVE_HAL_REG_ID + 0UL)
+#define REG_ID (EVE_HAL_REG_ID + 0UL)
+#define REG_FRAMES (REG_ID + 4UL)
+#define REG_CLOCK (REG_ID + 8UL)
+#define REG_FREQUENCY (REG_ID + 12UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_RENDERMODE (REG_ID + 16UL)
+#define REG_SNAPY (REG_ID + 20UL)
+#define REG_SNAPSHOT (REG_ID + 24UL)
+#define REG_SNAPFORMAT (REG_ID + 28UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_RE_DEST (REG_ID + 16UL)
+#define REG_RE_FORMAT (REG_ID + 20UL)
+#define REG_RE_ROTATE (REG_ID + 24UL)
+#define REG_RE_W (REG_ID + 28UL)
+#define REG_RE_H (REG_ID + 32UL)
+#define REG_RE_DITHER (REG_ID + 36UL)
+#define REG_RE_ACTIVE (REG_ID + 40UL)
+#define REG_RE_RENDERS (REG_ID + 44UL)
+#define REG_RE_TESTMODE (REG_ID + 48UL)
+#define REG_SC0_RESET (REG_ID + 52UL)
+#define REG_SC0_SIZE (REG_ID + 56UL)
+#define REG_SC0_PTR0 (REG_ID + 60UL)
+#define REG_SC0_PTR1 (REG_ID + 64UL)
+#define REG_SC0_PTR2 (REG_ID + 68UL)
+#define REG_SC0_PTR3 (REG_ID + 72UL)
+#define REG_SC1_RESET (REG_ID + 76UL)
+#define REG_SC1_SIZE (REG_ID + 80UL)
+#define REG_SC1_PTR0 (REG_ID + 84UL)
+#define REG_SC1_PTR1 (REG_ID + 88UL)
+#define REG_SC1_PTR2 (REG_ID + 92UL)
+#define REG_SC1_PTR3 (REG_ID + 96UL)
+#define REG_SC2_RESET (REG_ID + 100UL)
+#define REG_SC2_SIZE (REG_ID + 104UL)
+#define REG_SC2_PTR0 (REG_ID + 108UL)
+#define REG_SC2_PTR1 (REG_ID + 112UL)
+#define REG_SC2_PTR2 (REG_ID + 116UL)
+#define REG_SC2_PTR3 (REG_ID + 120UL)
+#define REG_SC1_I_VALID (REG_ID + 124UL)
+#define REG_SC1_I_READY (REG_ID + 128UL)
+#define REG_SC1_I_PTR (REG_ID + 132UL)
+#endif
+
+#define REG_CPURESET (EVE_HAL_REG_CPURESET + 0UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_TAP_CRC (REG_CPURESET + 4UL)
+#define REG_TAP_MASK (REG_CPURESET + 8UL)
+#endif
+#define REG_HCYCLE (EVE_HAL_REG_HCYCLE + 0UL)
+#define REG_HOFFSET (REG_HCYCLE + 4UL)
+#define REG_HSIZE (REG_HCYCLE + 8UL)
+#define REG_HSYNC0 (REG_HCYCLE + 12UL)
+#define REG_HSYNC1 (REG_HCYCLE + 16UL)
+#define REG_VCYCLE (REG_HCYCLE + 20UL)
+#define REG_VOFFSET (REG_HCYCLE + 24UL)
+#define REG_VSIZE (REG_HCYCLE + 28UL)
+#define REG_VSYNC0 (REG_HCYCLE + 32UL)
+#define REG_VSYNC1 (REG_HCYCLE + 36UL)
+#define REG_DLSWAP (REG_HCYCLE + 40UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_ROTATE (REG_HCYCLE + 44UL)
+#define REG_OUTBITS (REG_HCYCLE + 48UL)
+#define REG_DITHER (REG_HCYCLE + 52UL)
+#define REG_SWIZZLE (REG_HCYCLE + 56UL)
+#define REG_CSPREAD (REG_HCYCLE + 60UL)
+#endif
+
+#define REG_PCLK_POL (EVE_HAL_REG_PCLK_POL + 0UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_PCLK (REG_PCLK_POL + 4UL)
+#endif
+
+#define REG_TAG_X (EVE_HAL_REG_TAG_X + 0UL)
+#define REG_TAG_Y (REG_TAG_X + 4UL)
+#define REG_TAG (REG_TAG_X + 8UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_VOL_PB (REG_TAG_X + 12UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_VOL_L_PB (REG_TAG_X + 12UL)
+#define REG_VOL_R_PB (REG_TAG_X + 16UL)
+#endif
+
+#define REG_VOL_SOUND (EVE_HAL_REG_VOL_SOUND + 0UL)
+#define REG_SOUND (REG_VOL_SOUND + 4UL)
+#define REG_PLAY (REG_VOL_SOUND + 8UL)
+#define REG_GPIO_DIR (REG_VOL_SOUND + 12UL)
+#define REG_GPIO (REG_VOL_SOUND + 16UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_GPIOX_DIR (REG_VOL_SOUND + 20UL)
+#define REG_GPIOX (REG_VOL_SOUND + 24UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_DISP (REG_VOL_SOUND + 20UL)
+#endif
+
+#define REG_J1_COLD (EVE_HAL_REG_J1_COLD + 0UL)
+
+#define REG_J1_INT (EVE_HAL_REG_J1_INT + 0UL)
+
+#define REG_INT_FLAGS (EVE_HAL_REG_INT_FLAGS + 0UL)
+#define REG_INT_EN (REG_INT_FLAGS + 4UL)
+#define REG_INT_MASK (REG_INT_FLAGS + 8UL)
+#define REG_PLAYBACK_START (REG_INT_FLAGS + 12UL)
+#define REG_PLAYBACK_LENGTH (REG_INT_FLAGS + 16UL)
+#define REG_PLAYBACK_READPTR (REG_INT_FLAGS + 20UL)
+#define REG_PLAYBACK_FREQ (REG_INT_FLAGS + 24UL)
+#define REG_PLAYBACK_FORMAT (REG_INT_FLAGS + 28UL)
+#define REG_PLAYBACK_LOOP (REG_INT_FLAGS + 32UL)
+#define REG_PLAYBACK_PLAY (REG_INT_FLAGS + 36UL)
+#define REG_PWM_HZ (REG_INT_FLAGS + 40UL)
+#define REG_PWM_DUTY (REG_INT_FLAGS + 44UL)
+#define REG_MACRO_0 (REG_INT_FLAGS + 48UL)
+#define REG_MACRO_1 (REG_INT_FLAGS + 52UL)
+#define REG_CYA0 (REG_INT_FLAGS + 56UL)
+#define REG_CYA1 (REG_INT_FLAGS + 60UL)
+#define REG_BUSYBITS (REG_INT_FLAGS + 64UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_ROMSUB_SEL (REG_INT_FLAGS + 72UL)
+#define REG_RAM_FOLD (REG_INT_FLAGS + 76UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_J1CODE_SEL (REG_INT_FLAGS + 72UL)
+#endif
+
+#define REG_CMD_READ (EVE_HAL_REG_CMD_READ + 0UL)
+#define REG_CMD_WRITE (REG_CMD_READ + 4UL)
+#define REG_CMD_DL (REG_CMD_READ + 8UL)
+#define REG_TOUCH_MODE (REG_CMD_READ + 12UL)
+#define REG_CTOUCH_EXTENDED (REG_CMD_READ + 16UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_TOUCH_ADC_MODE (REG_CMD_READ + 16UL)
+#define REG_EHOST_TOUCH_X (REG_CMD_READ + 20UL)
+#define REG_TOUCH_CHARGE (REG_CMD_READ + 20UL)
+#define REG_TOUCH_SETTLE (REG_CMD_READ + 24UL)
+#define REG_EHOST_TOUCH_ID (REG_CMD_READ + 28UL)
+#define REG_TOUCH_OVERSAMPLE (REG_CMD_READ + 28UL)
+#define REG_EHOST_TOUCH_Y (REG_CMD_READ + 32UL)
+#define REG_TOUCH_RZTHRESH (REG_CMD_READ + 32UL)
+#endif
+
+#define REG_CTOUCH_TOUCH0_XY (EVE_HAL_REG_CTOUCH_TOUCH0_XY + 0UL)
+#define REG_TOUCH_SCREEN_XY (REG_CTOUCH_TOUCH0_XY + 0UL)
+#define REG_CTOUCH_TOUCH1_XY (EVE_HAL_REG_CTOUCH_TOUCH1_XY + 0UL)
+#define REG_TOUCH_RAW_XY (REG_CTOUCH_TOUCH1_XY + 0UL)
+#define REG_CTOUCH_TOUCHA_XY (REG_CTOUCH_TOUCH1_XY + 0UL)
+#define REG_CTOUCH_TOUCH2_XY (EVE_HAL_REG_CTOUCH_TOUCH2_XY + 0UL)
+#define REG_TOUCH_DIRECT_XY (REG_CTOUCH_TOUCH2_XY + 0UL)
+#define REG_CTOUCH_TOUCHB_XY (REG_CTOUCH_TOUCH2_XY + 0UL)
+
+#define REG_CTOUCH_TOUCH3_XY (EVE_HAL_REG_CTOUCH_TOUCH3_XY + 0UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_TOUCH_DIRECT_Z1Z2 (REG_CTOUCH_TOUCH3_XY + 0UL)
+#endif
+#define REG_CTOUCH_TOUCHC_XY (REG_CTOUCH_TOUCH3_XY + 0UL)
+
+#define REG_TOUCH_TAG_XY (EVE_HAL_REG_TOUCH_TAG_XY + 0UL)
+#define REG_TOUCH_TAG (REG_TOUCH_TAG_XY + 4UL)
+#define REG_TOUCH_TAG1_XY (REG_TOUCH_TAG_XY + 8UL)
+#define REG_TOUCH_TAG1 (REG_TOUCH_TAG_XY + 12UL)
+#define REG_TOUCH_TAG2_XY (REG_TOUCH_TAG_XY + 16UL)
+#define REG_TOUCH_TAG2 (REG_TOUCH_TAG_XY + 20UL)
+#define REG_TOUCH_TAG3_XY (REG_TOUCH_TAG_XY + 24UL)
+#define REG_TOUCH_TAG3 (REG_TOUCH_TAG_XY + 28UL)
+#define REG_TOUCH_TAG4_XY (REG_TOUCH_TAG_XY + 32UL)
+#define REG_TOUCH_TAG4 (REG_TOUCH_TAG_XY + 36UL)
+
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_CTOUCH_TOUCH4_Y (REG_TOUCH_TAG_XY - 8UL)
+#define REG_CTOUCH_IDS (REG_TOUCH_TAG_XY - 8UL)
+#define REG_TOUCH_RZ (REG_TOUCH_TAG_XY - 8UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_CTOUCH_TOUCH4_XY (REG_TOUCH_TAG_XY - 4UL)
+#endif
+
+#define REG_TOUCH_TAG_XY (EVE_HAL_REG_TOUCH_TAG_XY + 0UL)
+#define REG_TOUCH_TAG (REG_TOUCH_TAG_XY + 4UL)
+#define REG_TOUCH_TAG1_XY (REG_TOUCH_TAG_XY + 8UL)
+#define REG_TOUCH_TAG1 (REG_TOUCH_TAG_XY + 12UL)
+#define REG_TOUCH_TAG2_XY (REG_TOUCH_TAG_XY + 16UL)
+#define REG_TOUCH_TAG2 (REG_TOUCH_TAG_XY + 20UL)
+#define REG_TOUCH_TAG3_XY (REG_TOUCH_TAG_XY + 24UL)
+#define REG_TOUCH_TAG3 (REG_TOUCH_TAG_XY + 28UL)
+#define REG_TOUCH_TAG4_XY (REG_TOUCH_TAG_XY + 32UL)
+#define REG_TOUCH_TAG4 (REG_TOUCH_TAG_XY + 36UL)
+
+#define REG_TOUCH_TRANSFORM_A (EVE_HAL_REG_TOUCH_TRANSFORM_A + 0UL)
+#define REG_TOUCH_TRANSFORM_B (REG_TOUCH_TRANSFORM_A + 4UL)
+#define REG_TOUCH_TRANSFORM_C (REG_TOUCH_TRANSFORM_A + 8UL)
+#define REG_TOUCH_TRANSFORM_D (REG_TOUCH_TRANSFORM_A + 12UL)
+#define REG_TOUCH_TRANSFORM_E (REG_TOUCH_TRANSFORM_A + 16UL)
+#define REG_TOUCH_TRANSFORM_F (REG_TOUCH_TRANSFORM_A + 20UL)
+#define REG_TOUCH_CONFIG (REG_TOUCH_TRANSFORM_A + 24UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_ANALOG (REG_TOUCH_TRANSFORM_A + 28UL)
+#define REG_CTOUCH_GESTURE (REG_TOUCH_TRANSFORM_A + 28UL)
+#define REG_CTOUCH_TOUCH4_X (REG_TOUCH_TRANSFORM_A + 28UL)
+#define REG_PATCHED_TOUCH_FAULT (REG_TOUCH_TRANSFORM_A + 28UL)
+#define REG_EHOST_TOUCH_ACK (REG_TOUCH_TRANSFORM_A + 32UL)
+#define REG_PATCHED_ANALOG (REG_TOUCH_TRANSFORM_A + 32UL)
+#define REG_TOUCH_FAULT (REG_TOUCH_TRANSFORM_A + 32UL)
+#define REG_BIST_EN (EVE_CHIPID == EVE_FT800 ? 1058132UL : (REG_TOUCH_TRANSFORM_A + 36UL))
+#endif	  
+
+#define REG_CRC (EVE_HAL_REG_CRC + 0UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_SPI_EARLY_TX (REG_CRC + 4UL)
+#endif
+
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_TRIM (EVE_HAL_REG_TRIM + 0UL)
+#define REG_ANA_COMP (REG_TRIM + 4UL)
+#define REG_SPI_WIDTH (REG_TRIM + 8UL)
+#endif
+#define REG_EJPG_READY (EVE_HAL_REG_EJPG_READY + 0UL)
+														
+#define REG_EJPG_BUSY (REG_EJPG_READY + 4UL)
+#define REG_EJPG_DAT (REG_EJPG_READY + 8UL)
+												   
+#define REG_EJPG_OPTIONS (REG_EJPG_READY + 12UL)
+#define REG_EJPG_DST (REG_EJPG_READY + 16UL)
+#define REG_EJPG_W (REG_EJPG_READY + 20UL)
+#define REG_EJPG_H (REG_EJPG_READY + 24UL)
+#define REG_EJPG_FORMAT (REG_EJPG_READY + 28UL)
+#define REG_EJPG_RI (REG_EJPG_READY + 32UL)
+#define REG_EJPG_TQ (REG_EJPG_READY + 36UL)
+#define REG_EJPG_TDA (REG_EJPG_READY + 40UL)
+#define REG_EJPG_Q (REG_EJPG_READY + 44UL)
+#define REG_EJPG_HT (REG_EJPG_READY + 172UL)
+#define REG_EJPG_DCC (REG_EJPG_READY + 428UL)
+#define REG_EJPG_ACC (REG_EJPG_READY + 452UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_EJPG_SCALE (REG_EJPG_READY + 964UL)
+#endif
+
+#define REG_EJPG_DEBUG (EVE_HAL_REG_EJPG_DEBUG + 0UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_RASTERY (REG_EJPG_DEBUG + 4UL)
+#endif
+
+#define REG_DATESTAMP (EVE_HAL_REG_DATESTAMP + 0UL)
+
+#define REG_CMDB_WRITE (EVE_HAL_REG_CMDB_WRITE + 0UL)
+
+#define REG_CMDB_SPACE (EVE_HAL_REG_CMDB_SPACE + 0UL)
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_SPIM_FAST (REG_CMDB_SPACE + 4UL)
+#endif
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_ADAPTIVE_FRAMERATE (REG_CMDB_SPACE + 8UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_SPIM_SLOW_VALID (REG_CMDB_SPACE + 8UL)
+#endif
+#define REG_SPIM_DIR (REG_CMDB_SPACE + 12UL)
+#define REG_SPIM (REG_CMDB_SPACE + 16UL)
+#define REG_ESPIM_READSTART (REG_CMDB_SPACE + 20UL)
+#define REG_ESPIM_SEQ (REG_CMDB_SPACE + 24UL)
+#define REG_ESPIM_ADD (REG_CMDB_SPACE + 40UL)
+#define REG_ESPIM_COUNT (REG_CMDB_SPACE + 44UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_ESPIM_WINDOW (REG_CMDB_SPACE + 48UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_ESPIM_DEST (REG_CMDB_SPACE + 48UL)
+#endif
+
+#define REG_ESPIM_DUMMY (EVE_HAL_REG_ESPIM_DUMMY + 0UL)
+#define REG_ESPIM_TRIG (REG_ESPIM_DUMMY + 4UL)
+#define REG_PLAYBACK_PAUSE (REG_ESPIM_DUMMY + 8UL)
+#define REG_FLASH_STATUS (REG_ESPIM_DUMMY + 12UL)
+#define REG_FULLBUSYBITS (REG_ESPIM_DUMMY + 16UL)
+#define REG_SHA1KEY (REG_ESPIM_DUMMY + 32UL)
+
+#if defined(BT_81XA_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_UNDERRUN (REG_ESPIM_DUMMY + 40UL)
+#define REG_AH_HCYCLE_MAX (REG_ESPIM_DUMMY + 44UL)
+#define REG_PCLK_FREQ (REG_ESPIM_DUMMY + 48UL)
+#define REG_PCLK_2X (REG_ESPIM_DUMMY + 52UL)
+#endif
+
+#if defined(BT_81XA_ENABLE) || defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_FLASH_DTR (EVE_HAL_REG_FLASH_DTR + 0UL)
+												  
+#define REG_ESPIM_DTR (REG_FLASH_DTR + 4UL)
+#endif
+#if defined(BT_81XA_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+											  
+#define REG_HSF_HSIZE (REG_FLASH_DTR + 8UL)
+#define REG_HSF_FT1 (REG_FLASH_DTR + 12UL)
+#define REG_HSF_FSCALE (REG_FLASH_DTR + 16UL)
+#define REG_HSF_F00 (REG_FLASH_DTR + 20UL)
+#define REG_HSF_F02 (REG_FLASH_DTR + 24UL)
+#define REG_HSF_F03 (REG_FLASH_DTR + 28UL)
+#define REG_HSF_F10 (REG_FLASH_DTR + 32UL)
+#define REG_HSF_F11 (REG_FLASH_DTR + 36UL)
+#define REG_HSF_F12 (REG_FLASH_DTR + 40UL)
+#define REG_HSF_F13 (REG_FLASH_DTR + 44UL)
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_SO_MODE (REG_FLASH_DTR + 8UL)
+#define REG_SO_SOURCE (REG_FLASH_DTR + 12UL)
+#define REG_SO_FORMAT (REG_FLASH_DTR + 16UL)
+#define REG_SO_EN (REG_FLASH_DTR + 20UL)
+#define REG_YSCAN (REG_FLASH_DTR + 24UL)
+#define REG_INF_START (REG_FLASH_DTR + 28UL)
+#define REG_INF_ERROR (REG_FLASH_DTR + 32UL)
+#define REG_INF_DBYTECNT (REG_FLASH_DTR + 36UL)
+#define REG_INF_OBYTECNT (REG_FLASH_DTR + 40UL)
+#define REG_INF_OEND (REG_FLASH_DTR + 44UL)
+#define REG_INF_DEST (REG_FLASH_DTR + 48UL)
+#define REG_INF_ISPACE (REG_FLASH_DTR + 52UL)
+#define REG_INF_IWRITE (REG_FLASH_DTR + 56UL)
+#define REG_BOOT_CONTROL (REG_FLASH_DTR + 60UL)
+#define REG_EPNG_EN (REG_FLASH_DTR + 64UL)
+#define REG_EPNG_START (REG_FLASH_DTR + 68UL)
+#define REG_EPNG_W (REG_FLASH_DTR + 72UL)
+#define REG_EPNG_H (REG_FLASH_DTR + 76UL)
+#define REG_EPNG_BPP (REG_FLASH_DTR + 80UL)
+#define REG_EPNG_TMP_0 (REG_FLASH_DTR + 84UL)
+#define REG_EPNG_TMP_1 (REG_FLASH_DTR + 88UL)
+#define REG_EPNG_THINMODE (REG_FLASH_DTR + 92UL)
+#define REG_EPNG_DEST (REG_FLASH_DTR + 96UL)
+#define REG_EPNG_FORMAT (REG_FLASH_DTR + 100UL)
+#define REG_EPNG_DITHER (REG_FLASH_DTR + 104UL)
+#define REG_EPNG_FINISHED (REG_FLASH_DTR + 108UL)
+#define REG_JSO (REG_FLASH_DTR + 112UL)
+#define REG_APB_PADDR (REG_FLASH_DTR + 116UL)
+#define REG_APB_PWDATA (REG_FLASH_DTR + 120UL)
+#define REG_APB_PRDATA (REG_FLASH_DTR + 124UL)
+#define REG_APB_REQ (REG_FLASH_DTR + 128UL)
+#define REG_RX_ENABLE (REG_FLASH_DTR + 132UL)
+#define REG_RX_CAPTURE (REG_FLASH_DTR + 136UL)
+#define REG_RX_SETUP (REG_FLASH_DTR + 140UL)
+#define REG_RX_DEST (REG_FLASH_DTR + 144UL)
+#define REG_RX_FORMAT (REG_FLASH_DTR + 148UL)
+#define REG_RX_DITHER (REG_FLASH_DTR + 152UL)
+#define REG_RX_HCYCLE (REG_FLASH_DTR + 156UL)
+#define REG_RX_HSIZE (REG_FLASH_DTR + 160UL)
+#define REG_RX_VCYCLE (REG_FLASH_DTR + 164UL)
+#define REG_RX_VSIZE (REG_FLASH_DTR + 168UL)
+#define REG_RX_FRAMES (REG_FLASH_DTR + 172UL)
+#define REG_BRIDGE_EN (REG_FLASH_DTR + 176UL)
+#define REG_AUDIO_OUT_ENABLE (REG_FLASH_DTR + 180UL)
+#define REG_SPIM_LATENCY (REG_FLASH_DTR + 184UL)
+#define REG_HSPIM_D (REG_FLASH_DTR + 188UL)
+#define REG_HSPIM_IDLE (REG_FLASH_DTR + 192UL)
+#define REG_HSPIM_QUAD (REG_FLASH_DTR + 196UL)
+#define REG_SO_CRC (REG_FLASH_DTR + 200UL)
+#define REG_SO_CRC_CHANGE (REG_FLASH_DTR + 204UL)
+#define REG_SO_CRC_MASK (REG_FLASH_DTR + 208UL)
+#define REG_DDR_0_OC (REG_FLASH_DTR + 224UL)
+#define REG_DDR_0_WC (REG_FLASH_DTR + 228UL)
+#define REG_DDR_0_RC (REG_FLASH_DTR + 232UL)
+#define REG_DDR_1_OC (REG_FLASH_DTR + 236UL)
+#define REG_DDR_1_WC (REG_FLASH_DTR + 240UL)
+#define REG_DDR_1_RC (REG_FLASH_DTR + 244UL)
+#define REG_DDR_2_OC (REG_FLASH_DTR + 248UL)
+#define REG_DDR_2_WC (REG_FLASH_DTR + 252UL)
+#define REG_DDR_2_RC (REG_FLASH_DTR + 256UL)
+#define REG_DDR_3_OC (REG_FLASH_DTR + 260UL)
+#define REG_DDR_3_WC (REG_FLASH_DTR + 264UL)
+#define REG_DDR_3_RC (REG_FLASH_DTR + 268UL)
+#define REG_DDR_4_OC (REG_FLASH_DTR + 272UL)
+#define REG_DDR_4_WC (REG_FLASH_DTR + 276UL)
+#define REG_DDR_4_RC (REG_FLASH_DTR + 280UL)
+#define REG_DDR_5_OC (REG_FLASH_DTR + 284UL)
+#define REG_DDR_5_WC (REG_FLASH_DTR + 288UL)
+#define REG_DDR_5_RC (REG_FLASH_DTR + 292UL)
+#define REG_I2S_EN (REG_FLASH_DTR + 296UL)
+#define REG_I2S_FREQ (REG_FLASH_DTR + 300UL)
+#define REG_FREQUENCY_A (REG_FLASH_DTR + 304UL)
+#define REG_AHB_WR (REG_FLASH_DTR + 308UL)
+#define REG_AHB_RD (REG_FLASH_DTR + 312UL)
+#define REG_AHB_ADDR (REG_FLASH_DTR + 316UL)
+#define REG_AHB_WDATA (REG_FLASH_DTR + 320UL)
+#define REG_AHB_RDATA (REG_FLASH_DTR + 324UL)
+#define REG_FENCE (REG_FLASH_DTR + 328UL)
+#define REG_AHB_DMA_EN (REG_FLASH_DTR + 332UL)
+#define REG_AHB_DMA_ADDR (REG_FLASH_DTR + 336UL)
+#define REG_AHB_PENDING (REG_FLASH_DTR + 340UL)
+#define REG_AHB_RM (REG_FLASH_DTR + 344UL)
+#define REG_E0_EREADY_FREQ (REG_FLASH_DTR + 348UL)
+#define REG_STAT_HWQ_MIN (REG_FLASH_DTR + 352UL)
+#define REG_STAT_LVDSRX_MIN (REG_FLASH_DTR + 356UL)
+#define REG_LVF_HCYCLE (REG_FLASH_DTR + 360UL)
+#define REG_LVF_HOFFSET (REG_FLASH_DTR + 364UL)
+#define REG_LVF_HSIZE (REG_FLASH_DTR + 368UL)
+#define REG_LVF_HSYNC0 (REG_FLASH_DTR + 372UL)
+#define REG_LVF_HSYNC1 (REG_FLASH_DTR + 376UL)
+#define REG_LVF_VCYCLE (REG_FLASH_DTR + 380UL)
+#define REG_LVF_VOFFSET (REG_FLASH_DTR + 384UL)
+#define REG_LVF_VSIZE (REG_FLASH_DTR + 388UL)
+#define REG_LVF_VSYNC0 (REG_FLASH_DTR + 392UL)
+#define REG_LVF_VSYNC1 (REG_FLASH_DTR + 396UL)
+#define REG_LVF_MODE (REG_FLASH_DTR + 400UL)
+#define REG_SC2_STATUS (REG_FLASH_DTR + 404UL)
+#define REG_SC2_ADDR (REG_FLASH_DTR + 408UL)
+#define REG_PSEUDO_BASE (REG_FLASH_DTR + 412UL)
+#define REG_RAM_SIZE (REG_FLASH_DTR + 416UL)
+#define REG_CMDR_SHADOW (REG_FLASH_DTR + 436UL)
+#define REG_CMDR_READ (REG_FLASH_DTR + 440UL)
+#define REG_CMDR_EMPTY (REG_FLASH_DTR + 444UL)
+#define REG_JT_SPLIT (REG_FLASH_DTR + 448UL)
+#define REG_JT_TICK_100HZ (REG_FLASH_DTR + 452UL)
+#define REG_JT_IBOX_VR (REG_FLASH_DTR + 456UL)
+#define REG_JT_IBOX (REG_FLASH_DTR + 460UL)
+#define REG_JT_OBOX_VR (REG_FLASH_DTR + 464UL)
+#define REG_JT_OBOX (REG_FLASH_DTR + 468UL)
+#endif
+
+#define REG_TRACKER (EVE_HAL_REG_TRACKER + 0UL)
+#define REG_TRACKER_1 (REG_TRACKER + 4UL)
+#define REG_TRACKER_2 (REG_TRACKER + 8UL)
+#define REG_TRACKER_3 (REG_TRACKER + 12UL)
+#define REG_TRACKER_4 (REG_TRACKER + 16UL)
+#define REG_MEDIAFIFO_READ (REG_TRACKER + 20UL)
+#define REG_MEDIAFIFO_WRITE (REG_TRACKER + 24UL)
+#define REG_MEDIAFIFO_BASE (REG_TRACKER + 28UL)
+#define REG_MEDIAFIFO_SIZE (REG_TRACKER + 32UL)
+#define REG_FLASH_SIZE (REG_TRACKER + 36UL)
+#define REG_ANIM_ACTIVE (REG_TRACKER + 44UL)
+#define REG_DF_TUNED (REG_TRACKER + 48UL)
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_DISPATCH_SOURCE (REG_TRACKER + 52UL)
+#define REG_OBJECT_COMPLETE (REG_TRACKER + 56UL)
+#define REG_EXTENT_X0 (REG_TRACKER + 60UL)
+#define REG_EXTENT_Y0 (REG_TRACKER + 64UL)
+#define REG_EXTENT_X1 (REG_TRACKER + 68UL)
+#define REG_EXTENT_Y1 (REG_TRACKER + 72UL)
+#define REG_OTP_STATUS (REG_TRACKER + 76UL)
+#endif
+
+#define REG_PLAY_CONTROL (EVE_HAL_REG_PLAY_CONTROL + 0UL)
+
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_CTOUCH_TOUCHD_X REG_CTOUCH_TOUCH4_X
+#define REG_CTOUCH_TOUCHD_Y REG_CTOUCH_TOUCH4_Y
+#endif
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_CTOUCH_TOUCHD_XY REG_CTOUCH_TOUCH4_XY
+#endif
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define BOOT_STATUS (2139096140UL)
+#endif
+
+/* Default clock frequencies as configured by HAL */
+#if defined(EVE_MULTI_GRAPHICS_TARGET)
+#define EVE_FREQUENCY_DEFAULT (EVE_CHIPID >= EVE_BT815 ? 72000000UL : (EVE_CHIPID >= EVE_FT810 ? 60000000UL : 48000000UL))
+#else
+#if defined(BT_82X_ENABLE) || defined(BT_81X_ENABLE)
+#define EVE_FREQUENCY_DEFAULT (72000000UL)
+#elif defined(FT_81X_ENABLE)
+#define EVE_FREQUENCY_DEFAULT (60000000UL)
+#else
+#define EVE_FREQUENCY_DEFAULT (48000000UL)
+#endif
+#endif
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+// Maximum value to avoid read overrun into write-on-read registers on register address space is 11
+// Observed required minimum value is 6 for register reads on quad SPI
+// #define EVE_POLLING_BYTES (11) // TODO: Separate value for DDR and registers - recommended value to be determined
+#define EVE_POLLING_BYTES_REG (10) // For register area (currently defined as anything above EVE_REG_BASE)
+#define EVE_POLLING_BYTES_DDR (32) // For DDR area
+// Same as above, but limits when reading byte by byte, rather than as a single batch read - this can be more lenient
+#define EVE_READ_TIMEOUT (64)
+#endif
+
+#define EVE_GPUDEFS_IMPLEMENT EVE_HAL_REG_ID,                \
+	                          EVE_HAL_REG_CPURESET,          \
+	                          EVE_HAL_REG_HCYCLE,            \
+	                          EVE_HAL_REG_PCLK_POL,          \
+	                          EVE_HAL_REG_TAG_X,             \
+	                          EVE_HAL_REG_VOL_SOUND,         \
+	                          EVE_HAL_REG_J1_COLD,           \
+	                          EVE_HAL_REG_J1_INT,            \
+	                          EVE_HAL_REG_INT_FLAGS,         \
+	                          EVE_HAL_REG_CMD_READ,          \
+	                          EVE_HAL_REG_CTOUCH_TOUCH0_XY,  \
+	                          EVE_HAL_REG_CTOUCH_TOUCH1_XY,  \
+	                          EVE_HAL_REG_CTOUCH_TOUCH2_XY,  \
+	                          EVE_HAL_REG_CTOUCH_TOUCH3_XY,  \
+	                          EVE_HAL_REG_TOUCH_TAG_XY,      \
+	                          EVE_HAL_REG_TOUCH_TRANSFORM_A, \
+	                          EVE_HAL_REG_CRC,               \
+	                          EVE_HAL_REG_TRIM,              \
+	                          EVE_HAL_REG_EJPG_READY,        \
+	                          EVE_HAL_REG_EJPG_DEBUG,        \
+	                          EVE_HAL_REG_DATESTAMP,         \
+	                          EVE_HAL_REG_CMDB_WRITE,        \
+	                          EVE_HAL_REG_CMDB_SPACE,        \
+	                          EVE_HAL_REG_ESPIM_DUMMY,       \
+	                          EVE_HAL_REG_FLASH_DTR,         \
+	                          EVE_HAL_REG_TRACKER,           \
+	                          EVE_HAL_REG_PLAY_CONTROL,      \
+	                          RAM_DL,                        \
+	                          ROMFONT_TABLEADDRESS,          \
+	                          RAM_G_SIZE_MAX,                \
+	                          LOW_FREQ_BOUND,                \
+	                          BITMAP_ADDR_MASK,              \
+	                          PALETTE_ADDR_MASK,             \
+	                          SCISSOR_SIZE_SHIFT,            \
+	                          TAG_DL_MASK,                   \
+	                          BITMAP_HANDLE_MASK,            \
+	                          BITMAP_LAYOUT_H_STRIDE_MASK
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+
+#define DDR_BASE_ADDR 2139095040UL
+#define DDR_PD_CFG 2139096068UL
+#define DDR_REG_AHBRPRER1 2139095200UL
+#define DDR_REG_AHBRPRER2 2139095204UL
+#define DDR_REG_APDCR 2139095084UL
+#define DDR_REG_B8_PHYCR 2139095468UL
+#define DDR_REG_BIST_CTRL 2139095472UL
+#define DDR_REG_BIST_EXP_DATA_HIGH 2139095508UL
+#define DDR_REG_BIST_EXP_DATA_LOW 2139095504UL
+#define DDR_REG_BIST_FAIL_ADDR 2139095492UL
+#define DDR_REG_BIST_FAIL_DATA_HIGH 2139095500UL
+#define DDR_REG_BIST_FAIL_DATA_LOW 2139095496UL
+#define DDR_REG_BIST_RESULT 2139095488UL
+#define DDR_REG_BIST_SIZE 2139095480UL
+#define DDR_REG_BIST_START_ADDR 2139095476UL
+#define DDR_REG_CHARBRA 2139095088UL
+#define DDR_REG_CHARBRB 2139095236UL
+#define DDR_REG_CHGNTRA 2139095092UL
+#define DDR_REG_CHGNTRB 2139095096UL
+#define DDR_REG_CHGNTRC 2139095240UL
+#define DDR_REG_CHGNTRD 2139095244UL
+#define DDR_REG_CMDCNTR0 2139095168UL
+#define DDR_REG_CMDCNTR1 2139095172UL
+#define DDR_REG_CMDCNTR2 2139095176UL
+#define DDR_REG_CMDCNTR3 2139095180UL
+#define DDR_REG_CMDCNTR4 2139095184UL
+#define DDR_REG_CMDCNTR5 2139095188UL
+#define DDR_REG_CMDCNTR6 2139095192UL
+#define DDR_REG_CMDCNTR7 2139095196UL
+#define DDR_REG_COMPBLKCR 2139095080UL
+#define DDR_REG_DBGACCR 2139095268UL
+#define DDR_REG_DBGACCSR 2139095292UL
+#define DDR_REG_DBGADMR 2139095252UL
+#define DDR_REG_DBGADR 2139095248UL
+#define DDR_REG_DBGADSR 2139095280UL
+#define DDR_REG_DBGENR 2139095276UL
+#define DDR_REG_DBGMSTR 2139095264UL
+#define DDR_REG_DBGMSTSR 2139095288UL
+#define DDR_REG_DBGPCR 2139095272UL
+#define DDR_REG_DBGWDMR 2139095260UL
+#define DDR_REG_DBGWDR 2139095256UL
+#define DDR_REG_DBGWDSR 2139095284UL
+#define DDR_REG_ECC_CHR 2139095528UL
+#define DDR_REG_ECC_CTRLR 2139095520UL
+#define DDR_REG_ECC_EBPHR 2139095540UL
+#define DDR_REG_ECC_EBPLR 2139095536UL
+#define DDR_REG_ECC_ERR1_COUNT 2139095544UL
+#define DDR_REG_ECC_ERR2_COUNT 2139095548UL
+#define DDR_REG_ECC_ERROR_ADDR 2139095532UL
+#define DDR_REG_ECC_INTCR 2139095524UL
+#define DDR_REG_EFIFOCR 2139095352UL
+#define DDR_REG_EXRANKR 2139095056UL
+#define DDR_REG_FEATR1 2139095124UL
+#define DDR_REG_FEATR2 2139095128UL
+#define DDR_REG_FLUSHCR 2139095104UL
+#define DDR_REG_FLUSHSR 2139095108UL
+#define DDR_REG_INITWCR1 2139095208UL
+#define DDR_REG_INITWCR2 2139095212UL
+#define DDR_REG_LP2ADLR 2139095324UL
+#define DDR_REG_LP2MRA 2139095296UL
+#define DDR_REG_LP2MRB 2139095300UL
+#define DDR_REG_LP2MRC 2139095304UL
+#define DDR_REG_LP2MRCR 2139095316UL
+#define DDR_REG_LP2MRD 2139095308UL
+#define DDR_REG_LP2MRE 2139095312UL
+#define DDR_REG_LP2MRVR 2139095320UL
+#define DDR_REG_LP2WCR1 2139095328UL
+#define DDR_REG_LP2WCR2 2139095332UL
+#define DDR_REG_MCCR 2139095040UL
+#define DDR_REG_MCSR 2139095044UL
+#define DDR_REG_MRSVR0 2139095048UL
+#define DDR_REG_MRSVR1 2139095052UL
+#define DDR_REG_MSDLYCR 2139095156UL
+#define DDR_REG_PHYCR0 2139095072UL
+#define DDR_REG_PHYMISCR1 2139095148UL
+#define DDR_REG_PHYMISCR2 2139095348UL
+#define DDR_REG_PHYRDTFR 2139095344UL
+#define DDR_REG_PHYRDTR 2139095076UL
+#define DDR_REG_PHYWRTMR 2139095100UL
+#define DDR_REG_QOSCNTRA 2139095220UL
+#define DDR_REG_QOSCNTRB 2139095224UL
+#define DDR_REG_QOSCNTRC 2139095228UL
+#define DDR_REG_QOSCNTRD 2139095232UL
+#define DDR_REG_QOSCR 2139095216UL
+#define DDR_REG_RB0DSKW 2139095392UL
+#define DDR_REG_RB1DSKW 2139095396UL
+#define DDR_REG_RB2DSKW 2139095400UL
+#define DDR_REG_RB3DSKW 2139095404UL
+#define DDR_REG_RB4DSKW 2139095408UL
+#define DDR_REG_RB5DSKW 2139095412UL
+#define DDR_REG_RB6DSKW 2139095416UL
+#define DDR_REG_RB7DSKW 2139095420UL
+#define DDR_REG_RB8DSKW 2139095460UL
+#define DDR_REG_REARBDISR 2139095340UL
+#define DDR_REG_REVR 2139095120UL
+#define DDR_REG_RLEVELCR 2139095152UL
+#define DDR_REG_SPLITCR 2139095112UL
+#define DDR_REG_TMPR0 2139095060UL
+#define DDR_REG_TMPR1 2139095064UL
+#define DDR_REG_TMPR2 2139095068UL
+#define DDR_REG_TRAFMR 2139095164UL
+#define DDR_REG_UDEFR 2139095132UL
+#define DDR_REG_UPDCR 2139095116UL
+#define DDR_REG_WB0DSKW 2139095424UL
+#define DDR_REG_WB1DSKW 2139095428UL
+#define DDR_REG_WB2DSKW 2139095432UL
+#define DDR_REG_WB3DSKW 2139095436UL
+#define DDR_REG_WB4DSKW 2139095440UL
+#define DDR_REG_WB5DSKW 2139095444UL
+#define DDR_REG_WB6DSKW 2139095448UL
+#define DDR_REG_WB7DSKW 2139095452UL
+#define DDR_REG_WB8DSKW 2139095464UL
+#define DDR_REG_WDMDSKW 2139095456UL
+#define DDR_REG_WLEVELBHR 2139095140UL
+#define DDR_REG_WLEVELBLR 2139095144UL
+#define DDR_REG_WLEVELCR 2139095136UL
+#define DDR_REG_WRDLLCR 2139095160UL
+#define DDR_TYPE 2139096148UL
+
+#define DREG_AXI_CFG 2139095588UL
+#define DREG_AXI_RSTAT_0 2139095600UL
+#define DREG_AXI_RSTAT_1 2139095604UL
+#define DREG_AXI_WSTAT_0 2139095592UL
+#define DREG_AXI_WSTAT_1 2139095596UL
+#define DREG_BASE_ADDR 2139095552UL
+#define DREG_CTL_RST_DLY 2139095584UL
+#define DREG_DDR_DISABLED_BIT 4UL
+#define DREG_DDR_ENABLED_BIT 5UL
+#define DREG_DDR_MODE 2139095556UL
+#define DREG_DDR_PLL_CFG 2139095560UL
+#define DREG_DDR_PLL_LOCK_DLY 2139095564UL
+#define DREG_DDR_RST_CTL 2139095552UL
+#define DREG_ERR_STAT 2139095612UL
+#define DREG_MC_STAT 2139095608UL
+#define DREG_PHYDLL_PDN_DLY 2139095576UL
+#define DREG_PHYPLL_LOCK_DLY 2139095572UL
+#define DREG_PHYPLL_PDN_DLY 2139095568UL
+#define DREG_PHY_RST_DLY 2139095580UL
+
+#define I2S_CFG 2139097088UL
+#define I2S_CTL 2139097092UL
+#define I2S_FIFO 2139097136UL
+#define I2S_IRQ_EN 2139097096UL
+#define I2S_IRQ_STAT 2139097100UL
+#define I2S_STAT 2139097104UL
+
+#define LVDSPLL_CFG 2139095812UL
+#define LVDS_CFG 2139095816UL
+#define LVDS_CTRL_CH0 2139095828UL
+#define LVDS_CTRL_CH1 2139095832UL
+#define LVDS_EN 2139095808UL
+#define LVDS_ERR_STAT 2139095840UL
+#define LVDS_STAT 2139095836UL
+#define LVDS_TGEN_HCFG_0 2139095820UL
+#define LVDS_TGEN_HCFG_1 2139095844UL
+#define LVDS_TGEN_HCFG_2 2139095852UL
+#define LVDS_TGEN_VCFG_0 2139095824UL
+#define LVDS_TGEN_VCFG_1 2139095848UL
+#define LVDS_TGEN_VCFG_2 2139095856UL
+
+#define PIN_DRV_2 2139096164UL
+#define PIN_SLEW_1 2139096168UL
+#define PIN_TYPE_2 2139096172UL
+
+#define SYS_CFG 2139096096UL
+#define SYS_FREQ 2139096144UL
+#define SYS_GPREG 2139096156UL
+#define SYS_STAT_0 2139096100UL
+#define SYS_STAT_1 2139096104UL
+#define SYS_STAT_2 2139096152UL
+#define SYS_STAT_3 2139096160UL
+
+#define WDT_CFG 2139097604UL
+#define WDT_CONTROL 2139097600UL
+
+#ifdef WDT_COUNT
+#undef WDT_COUNT
+#define WDT_COUNT 2139097612UL
+#endif
+
+#define WDT_INIT_VAL 2139097608UL
+#define WDT_LOCK 2139097620UL
+#define WDT_TIMEOUT 2139097616U
+
+#endif
+
+/*************
+** Commands **
+*************/
+
+// clang-format off
+
+// FT800
+#define CMD_DLSTART 4294967040UL
+#define CMD_SWAP 4294967041UL
+#define CMD_INTERRUPT 4294967042UL
+#define CMD_BGCOLOR (EVE_CHIPID >= EVE_BT820 ? 4294967047UL : 4294967049UL)
+#define CMD_FGCOLOR (EVE_CHIPID >= EVE_BT820 ? 4294967048UL : 4294967050UL)
+#define CMD_GRADIENT (EVE_CHIPID >= EVE_BT820 ? 4294967049UL : 4294967051UL)
+#define CMD_TEXT (EVE_CHIPID >= EVE_BT820 ? 4294967050UL : 4294967052UL)
+#define CMD_BUTTON (EVE_CHIPID >= EVE_BT820 ? 4294967051UL : 4294967053UL)
+#define CMD_KEYS (EVE_CHIPID >= EVE_BT820 ? 4294967052UL : 4294967054UL)
+#define CMD_PROGRESS (EVE_CHIPID >= EVE_BT820 ? 4294967053UL : 4294967055UL)
+#define CMD_SLIDER (EVE_CHIPID >= EVE_BT820 ? 4294967054UL : 4294967056UL)
+#define CMD_SCROLLBAR (EVE_CHIPID >= EVE_BT820 ? 4294967055UL : 4294967057UL)
+#define CMD_TOGGLE (EVE_CHIPID >= EVE_BT820 ? 4294967056UL : 4294967058UL)
+#define CMD_GAUGE (EVE_CHIPID >= EVE_BT820 ? 4294967057UL : 4294967059UL)
+#define CMD_CLOCK (EVE_CHIPID >= EVE_BT820 ? 4294967058UL : 4294967060UL)
+#define CMD_CALIBRATE (EVE_CHIPID >= EVE_BT820 ? 4294967059UL : 4294967061UL)
+#define CMD_SPINNER (EVE_CHIPID >= EVE_BT820 ? 4294967060UL : 4294967062UL)
+#define CMD_STOP (EVE_CHIPID >= EVE_BT820 ? 4294967061UL : 4294967063UL)
+#define CMD_MEMCRC (EVE_CHIPID >= EVE_BT820 ? 4294967062UL : 4294967064UL)
+#define CMD_REGREAD (EVE_CHIPID >= EVE_BT820 ? 4294967063UL : 4294967065UL)
+#define CMD_MEMWRITE (EVE_CHIPID >= EVE_BT820 ? 4294967064UL : 4294967066UL)
+#define CMD_MEMSET (EVE_CHIPID >= EVE_BT820 ? 4294967065UL : 4294967067UL)
+#define CMD_MEMZERO (EVE_CHIPID >= EVE_BT820 ? 4294967066UL : 4294967068UL)
+#define CMD_MEMCPY (EVE_CHIPID >= EVE_BT820 ? 4294967067UL : 4294967069UL)
+#define CMD_APPEND (EVE_CHIPID >= EVE_BT820 ? 4294967068UL : 4294967070UL)
+#define CMD_SNAPSHOT (EVE_CHIPID >= EVE_BT820 ? 4294967069UL : 4294967071UL)
+#define CMD_BITMAP_TRANSFORM (EVE_CHIPID >= EVE_BT820 ? 4294967071UL : 4294967073UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_INFLATE 4294967074UL
+#endif
+#define CMD_GETPTR (EVE_CHIPID >= EVE_BT820 ? 4294967072UL : 4294967075UL)
+#define CMD_LOADIMAGE (EVE_CHIPID >= EVE_BT820 ? 4294967073UL : 4294967076UL)
+#define CMD_GETPROPS (EVE_CHIPID >= EVE_BT820 ? 4294967074UL : 4294967077UL)
+#define CMD_LOADIDENTITY (EVE_CHIPID >= EVE_BT820 ? 4294967075UL : 4294967078UL)
+#define CMD_TRANSLATE (EVE_CHIPID >= EVE_BT820 ? 4294967076UL : 4294967079UL)
+#define CMD_SCALE (EVE_CHIPID >= EVE_BT820 ? 4294967077UL : 4294967080UL)
+#define CMD_ROTATE (EVE_CHIPID >= EVE_BT820 ? 4294967078UL : 4294967081UL)
+#define CMD_SETMATRIX (EVE_CHIPID >= EVE_BT820 ? 4294967079UL : 4294967082UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_SETFONT 4294967083UL
+#endif
+#define CMD_TRACK (EVE_CHIPID >= EVE_BT820 ? 4294967080UL : 4294967084UL)
+#define CMD_DIAL (EVE_CHIPID >= EVE_BT820 ? 4294967081UL : 4294967085UL)
+#define CMD_NUMBER (EVE_CHIPID >= EVE_BT820 ? 4294967082UL : 4294967086UL)
+#define CMD_SCREENSAVER (EVE_CHIPID >= EVE_BT820 ? 4294967083UL : 4294967087UL)
+#define CMD_SKETCH (EVE_CHIPID >= EVE_BT820 ? 4294967084UL : 4294967088UL)
+#define CMD_LOGO (EVE_CHIPID >= EVE_BT820 ? 4294967085UL : 4294967089UL)
+#define CMD_COLDSTART (EVE_CHIPID >= EVE_BT820 ? 4294967086UL : 4294967090UL)
+#define CMD_GETMATRIX (EVE_CHIPID >= EVE_BT820 ? 4294967087UL : 4294967091UL)
+#define CMD_GRADCOLOR (EVE_CHIPID >= EVE_BT820 ? 4294967088UL : 4294967092UL)
+
+// FT801
+#if defined(FT_80X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_CSKETCH 4294967093UL
+#endif
+
+// FT810
+#if defined(FT_81X_ENABLE) || defined(BT_88X_ENABLE) || defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE) || defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_SETROTATE (EVE_CHIPID >= EVE_BT820 ? 4294967089UL : 4294967094UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_SNAPSHOT2 4294967095UL
+#endif
+// #define CMD_SNAPSHOT2 (EVE_CHIPID >= EVE_BT820 ? 4294967090UL : 4294967095UL) // Removed in BT820
+#define CMD_SETBASE (EVE_CHIPID >= EVE_BT820 ? 4294967091UL : 4294967096UL)
+#define CMD_MEDIAFIFO (EVE_CHIPID >= EVE_BT820 ? 4294967092UL : 4294967097UL)
+#define CMD_PLAYVIDEO (EVE_CHIPID >= EVE_BT820 ? 4294967093UL : 4294967098UL)
+#define CMD_SETFONT2 (EVE_CHIPID >= EVE_BT820 ? 4294967094UL : 4294967099UL)
+#define CMD_SETSCRATCH (EVE_CHIPID >= EVE_BT820 ? 4294967095UL : 4294967100UL)
+#define CMD_ROMFONT (EVE_CHIPID >= EVE_BT820 ? 4294967097UL : 4294967103UL)
+#define CMD_VIDEOSTART (EVE_CHIPID >= EVE_BT820 ? 4294967098UL : 4294967104UL)
+#define CMD_VIDEOFRAME (EVE_CHIPID >= EVE_BT820 ? 4294967099UL : 4294967105UL)
+#define CMD_SYNC (EVE_CHIPID >= EVE_BT820 ? 4294967100UL : 4294967106UL)
+#define CMD_SETBITMAP (EVE_CHIPID >= EVE_BT820 ? 4294967101UL : 4294967107UL)
+#endif
+
+// BT815
+#if defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE) || defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_ANIMFRAME (EVE_CHIPID >= EVE_BT820 ? 4294967134UL : 4294967130UL)
+#define CMD_ANIMSTART (EVE_CHIPID >= EVE_BT820 ? 4294967135UL : 4294967123UL)
+#define CMD_FLASHERASE (EVE_CHIPID >= EVE_BT820 ? 4294967102UL : 4294967108UL)
+#define CMD_FLASHWRITE (EVE_CHIPID >= EVE_BT820 ? 4294967103UL : 4294967109UL)
+#define CMD_FLASHREAD (EVE_CHIPID >= EVE_BT820 ? 4294967104UL : 4294967110UL)
+#define CMD_FLASHUPDATE (EVE_CHIPID >= EVE_BT820 ? 4294967105UL : 4294967111UL)
+#define CMD_FLASHDETACH (EVE_CHIPID >= EVE_BT820 ? 4294967106UL : 4294967112UL)
+#define CMD_FLASHATTACH (EVE_CHIPID >= EVE_BT820 ? 4294967107UL : 4294967113UL)
+#define CMD_FLASHFAST (EVE_CHIPID >= EVE_BT820 ? 4294967108UL : 4294967114UL)
+#define CMD_FLASHSPIDESEL (EVE_CHIPID >= EVE_BT820 ? 4294967109UL : 4294967115UL)
+#define CMD_FLASHSPITX (EVE_CHIPID >= EVE_BT820 ? 4294967110UL : 4294967116UL)
+#define CMD_FLASHSPIRX (EVE_CHIPID >= EVE_BT820 ? 4294967111UL : 4294967117UL)
+#define CMD_FLASHSOURCE (EVE_CHIPID >= EVE_BT820 ? 4294967112UL : 4294967118UL)
+#define CMD_CLEARCACHE (EVE_CHIPID >= EVE_BT820 ? 4294967113UL : 4294967119UL)
+#define CMD_INFLATE2 (EVE_CHIPID >= EVE_BT820 ? 4294967114UL : 4294967120UL)
+#define CMD_ROTATEAROUND (EVE_CHIPID >= EVE_BT820 ? 4294967115UL : 4294967121UL)
+#define CMD_RESETFONTS (EVE_CHIPID >= EVE_BT820 ? 4294967116UL : 4294967122UL)
+#define CMD_ANIMSTOP (EVE_CHIPID >= EVE_BT820 ? 4294967117UL : 4294967124UL)
+#define CMD_ANIMXY (EVE_CHIPID >= EVE_BT820 ? 4294967118UL : 4294967125UL)
+#define CMD_ANIMDRAW (EVE_CHIPID >= EVE_BT820 ? 4294967119UL : 4294967126UL)
+#define CMD_GRADIENTA (EVE_CHIPID >= EVE_BT820 ? 4294967120UL : 4294967127UL)
+#define CMD_FILLWIDTH (EVE_CHIPID >= EVE_BT820 ? 4294967121UL : 4294967128UL)
+#define CMD_APPENDF (EVE_CHIPID >= EVE_BT820 ? 4294967122UL : 4294967129UL)
+#define CMD_NOP (EVE_CHIPID >= EVE_BT820 ? 4294967123UL : 4294967131UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_VIDEOSTARTF 4294967135UL
+#endif
+#endif
+
+// BT817
+#if defined(BT_81XA_ENABLE) || defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_CALIBRATESUB (EVE_CHIPID >= EVE_BT820 ? 4294967126UL : 4294967136UL)
+#define CMD_TESTCARD (EVE_CHIPID >= EVE_BT820 ? 4294967127UL : 4294967137UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_HSF 4294967138UL	 
+#define CMD_APILEVEL 4294967139UL 
+#endif
+#define CMD_GETIMAGE (EVE_CHIPID >= EVE_BT820 ? 4294967128UL : 4294967140UL)
+#define CMD_WAIT (EVE_CHIPID >= EVE_BT820 ? 4294967129UL : 4294967141UL)
+#define CMD_RETURN (EVE_CHIPID >= EVE_BT820 ? 4294967130UL : 4294967142UL)
+#define CMD_CALLLIST (EVE_CHIPID >= EVE_BT820 ? 4294967131UL : 4294967143UL)
+#define CMD_NEWLIST (EVE_CHIPID >= EVE_BT820 ? 4294967132UL : 4294967144UL)
+#define CMD_ENDLIST (EVE_CHIPID >= EVE_BT820 ? 4294967133UL : 4294967145UL)
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_PCLKFREQ 4294967146UL
+#define CMD_FONTCACHE 4294967147UL
+#define CMD_FONTCACHEQUERY 4294967148UL
+#endif
+#define CMD_ANIMFRAMERAM (EVE_CHIPID >= EVE_BT820 ? 4294967134UL : 4294967149UL)
+#define CMD_ANIMSTARTRAM (EVE_CHIPID >= EVE_BT820 ? 4294967135UL : 4294967150UL)
+#define CMD_RUNANIM (EVE_CHIPID >= EVE_BT820 ? 4294967136UL : 4294967151UL)
+#define CMD_FLASHPROGRAM (EVE_CHIPID >= EVE_BT820 ? 4294967140UL : 4294967152UL)
+#endif
+
+// BT820
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CMD_SOFTBOOT 4294967137UL
+#define CMD_APBREAD 4294967138UL
+#define CMD_APBWRITE 4294967139UL
+#define CMD_DDRSHUTDOWN 4294967141UL
+#define CMD_DDRSTARTUP 4294967142UL
+#define CMD_WAITCHANGE 4294967143UL
+#define CMD_FENCE 4294967144UL
+#define CMD_I2SSTARTUP 4294967145UL
+#define CMD_APBTHRASH 4294967146UL
+#define CMD_GRAPHICSFINISH 4294967147UL
+#define CMD_WORKAREA 4294967148UL
+#define CMD_FSOPTIONS 4294967149UL
+#define CMD_SDATTACH 4294967150UL
+#define CMD_SDBLOCKREAD 4294967151UL
+#define CMD_SDBLOCKWRITE 4294967152UL
+#define CMD_FSREAD 4294967153UL
+#define CMD_EVALUATE 4294967154UL
+#define CMD_DEBUGINFO 4294967155UL
+#define CMD_OTPRD 4294967156UL
+#define CMD_OTPWR 4294967157UL
+#define CMD_TOUCHRD 4294967158UL
+#define CMD_TOUCHWR 4294967159UL
+#define CMD_WAITCOND 4294967160UL
+#define CMD_PLAYWAV 4294967161UL
+#define CMD_QRCODE 4294967162UL
+#define CMD_LOADQRCODE 4294967163UL
+#define CMD_SAVECONTEXT 4294967164UL
+#define CMD_RESTORECONTEXT 4294967165UL
+#define CMD_ENABLEREGION 4294967166UL
+#define CMD_FSSOURCE 4294967167UL
+#define CMD_FSSIZE 4294967168UL
+#define CMD_LOADASSET 4294967169UL
+#define CMD_LOADPATCH 4294967170UL
+#define CMD_WATCHDOG 4294967171UL
+#define CMD_TEXTDIM 4294967172UL
+#define CMD_LOADWAV 4294967173UL
+#define CMD_REGWRITE 4294967174UL
+#define CMD_ARC 4294967175UL
+#define CMD_COPYLIST 4294967176UL
+#define CMD_RESULT 4294967177UL
+#define CMD_CGRADIENT 4294967178UL
+#define CMD_GLOW 4294967179UL
+#define CMD_SKIPCOND 4294967180UL
+#define CMD_RENDERTARGET 4294967181UL
+#define CMD_FSDIR 4294967182UL
+#endif
+
+
+// clang-format on
+
+/*****************
+** Display List **
+*****************/
+
+#define VERTEX2F(x, y) ((1UL << 30) | (((x)&32767UL) << 15) | (((y)&32767UL) << 0))
+#define VERTEX2II(x, y, handle, cell) ((2UL << 30) | (((x)&511UL) << 21) | (((y)&511UL) << 12) | (((handle)&31UL) << 7) | (((cell)&127UL) << 0))
+#define BITMAP_SOURCE(addr) ((1UL << 24) | ((addr) < 0 ? (((addr) & (BITMAP_ADDR_MASK >> 1))) : ((addr)&BITMAP_ADDR_MASK)))
+#define BITMAP_SOURCE2(flash_or_ram, addr) ((1UL << 24) | ((flash_or_ram) << 23) | (((addr) & (BITMAP_ADDR_MASK >> 1)) << 0))
+#define CLEAR_COLOR_RGB(red, green, blue) ((2UL << 24) | (((red)&255UL) << 16) | (((green)&255UL) << 8) | (((blue)&255UL) << 0))
+#define TAG(s) ((3UL << 24) | (((s)&TAG_DL_MASK) << 0))
+#define COLOR_RGB(red, green, blue) ((4UL << 24) | (((red)&255UL) << 16) | (((green)&255UL) << 8) | (((blue)&255UL) << 0))
+#define BITMAP_HANDLE(handle) ((5UL << 24) | (((handle)&BITMAP_HANDLE_MASK) << 0))
+#define CELL(cell) ((6UL << 24) | (((cell)&127UL) << 0))
+#define BITMAP_LAYOUT(format, linestride, height) ((7UL << 24) | (((format)&31UL) << 19) | (((linestride)&1023UL) << 9) | (((height)&511UL) << 0))
+#define BITMAP_SIZE(filter, wrapx, wrapy, width, height) ((8UL << 24) | (((filter)&1UL) << 20) | (((wrapx)&1UL) << 19) | (((wrapy)&1UL) << 18) | (((width)&511UL) << 9) | (((height)&511UL) << 0))
+#define ALPHA_FUNC(func, ref) ((9UL << 24) | (((func)&7UL) << 8) | (((ref)&255UL) << 0))
+#define STENCIL_FUNC(func, ref, mask) ((10UL << 24) | (((func)&7UL) << 16) | (((ref)&255UL) << 8) | (((mask)&255UL) << 0))
+#define BLEND_FUNC(src, dst) ((11UL << 24) | (((src)&7UL) << 3) | (((dst)&7UL) << 0))
+#define STENCIL_OP(sfail, spass) ((12UL << 24) | (((sfail)&7UL) << 3) | (((spass)&7UL) << 0))
+#define POINT_SIZE(size) ((13UL << 24) | (((size)&8191UL) << 0))
+#define LINE_WIDTH(width) ((14UL << 24) | (((width)&4095UL) << 0))
+#define CLEAR_COLOR_A(alpha) ((15UL << 24) | (((alpha)&255UL) << 0))
+#define COLOR_A(alpha) ((16UL << 24) | (((alpha)&255UL) << 0))
+#define CLEAR_STENCIL(s) ((17UL << 24) | (((s)&255UL) << 0))
+#define CLEAR_TAG(s) ((18UL << 24) | (((s)&TAG_DL_MASK) << 0))
+#define STENCIL_MASK(mask) ((19UL << 24) | (((mask)&255UL) << 0))
+#define TAG_MASK(mask) ((20UL << 24) | (((mask)&1UL) << 0))
+#define BITMAP_TRANSFORM_C(c) ((23UL << 24) | (((c)&16777215UL) << 0))
+#define BITMAP_TRANSFORM_F(f) ((26UL << 24) | (((f)&16777215UL) << 0))
+#define BITMAP_TRANSFORM_A_EXT(p, v) ((21UL << 24) | (((p)&1UL) << 17) | (((v)&131071UL) << 0))
+#define BITMAP_TRANSFORM_B_EXT(p, v) ((22UL << 24) | (((p)&1UL) << 17) | (((v)&131071UL) << 0))
+#define BITMAP_TRANSFORM_D_EXT(p, v) ((24UL << 24) | (((p)&1UL) << 17) | (((v)&131071UL) << 0))
+#define BITMAP_TRANSFORM_E_EXT(p, v) ((25UL << 24) | (((p)&1UL) << 17) | (((v)&131071UL) << 0))
+#define BITMAP_TRANSFORM_A(a) BITMAP_TRANSFORM_A_EXT(0, a)
+#define BITMAP_TRANSFORM_B(b) BITMAP_TRANSFORM_B_EXT(0, b)
+#define BITMAP_TRANSFORM_D(d) BITMAP_TRANSFORM_D_EXT(0, d)
+#define BITMAP_TRANSFORM_E(e) BITMAP_TRANSFORM_E_EXT(0, e)
+#define SCISSOR_XY(x, y) ((27UL << 24) | (((x)&SCISSOR_XY_MASK) << SCISSOR_XY_SHIFT) | (((y)&SCISSOR_XY_MASK) << 0))
+#define SCISSOR_SIZE(width, height) ((28UL << 24) | (((width)&SCISSOR_SIZE_MASK) << SCISSOR_SIZE_SHIFT) | (((height)&SCISSOR_SIZE_MASK) << 0))
+#define CALL(dest) ((29UL << 24) | (((dest)&65535UL) << 0))
+#define JUMP(dest) ((30UL << 24) | (((dest)&65535UL) << 0))
+#define BEGIN(prim) ((31UL << 24) | (((prim)&15UL) << 0))
+#define COLOR_MASK(r, g, b, a) ((32UL << 24) | (((r)&1UL) << 3) | (((g)&1UL) << 2) | (((b)&1UL) << 1) | (((a)&1UL) << 0))
+#define CLEAR(c, s, t) ((38UL << 24) | (((c)&1UL) << 2) | (((s)&1UL) << 1) | (((t)&1UL) << 0))
+#define VERTEX_FORMAT(frac) ((39UL << 24) | (((frac)&7UL) << 0))
+#define BITMAP_LAYOUT_H(linestride, height) ((40UL << 24) | (((linestride)&BITMAP_LAYOUT_H_STRIDE_MASK) << 2) | (((height)&3UL) << 0))
+#define BITMAP_SIZE_H(width, height) ((41UL << 24) | (((width)&3UL) << 2) | (((height)&3UL) << 0))
+#define PALETTE_SOURCE(addr) ((42UL << 24) | (((addr)&PALETTE_ADDR_MASK) << 0))
+#define VERTEX_TRANSLATE_X(x) ((43UL << 24) | (((x)&131071UL) << 0))
+#define VERTEX_TRANSLATE_Y(y) ((44UL << 24) | (((y)&131071UL) << 0))
+#define NOP() ((45UL << 24))
+#define BITMAP_EXT_FORMAT(format) ((46UL << 24) | (((format)&65535UL) << 0))
+#define BITMAP_SWIZZLE(r, g, b, a) ((47UL << 24) | (((r)&7UL) << 9) | (((g)&7UL) << 6) | (((b)&7UL) << 3) | (((a)&7UL) << 0))
+#define INT_FRR() ((48UL << 24))
+#define INT_PALDAT() ((48UL << 24))
+#define BITMAP_SOURCEH(addr) ((49UL << 24) | (((addr)&255UL) << 0))
+#define PALETTE_SOURCEH(addr) ((50UL << 24) | (((addr)&255UL) << 0))
+#define BITMAP_ZORDER(o) ((51UL << 24) | (((o)&255UL) << 0))
+#define REGION(y, h, dest) ((52UL << 24) | (((y)&63UL) << 18) | (((h)&63UL) << 12) | (((dest)&4095UL) << 0))
+#define SYS_PSEUDO_BASE(p) ((53UL << 24) | (((p)&2047UL) << 0))
+#define END() ((33UL << 24))
+#define SAVE_CONTEXT() ((34UL << 24))
+#define RESTORE_CONTEXT() ((35UL << 24))
+#define RETURN() ((36UL << 24))
+#define MACRO(m) ((37UL << 24) | (((m)&1UL) << 0))
+#define DISPLAY() ((0UL << 24))
+#define BITMAP_SOURCE_H(addr) BITMAP_SOURCEH(addr)
+#define PALETTE_SOURCE_H(addr) PALETTE_SOURCEH(addr)
+
+/************
+** Options **
+************/
+
+#ifdef POINTS
+#undef POINTS
+#endif
+
+#define DLSWAP_DONE 0UL
+#define DLSWAP_LINE 1UL
+#define DLSWAP_FRAME 2UL
+
+ESD_ENUM(Ft_CoPro_Opt, Type = uint16_t, Include = "EVE_Hal.h", Flags)
+#define OPT_3D 0UL
+#define OPT_RGB565 0UL
+#define OPT_MONO 1UL
+#define OPT_NODL 2UL
+#define OPT_NOTEAR 4UL
+#define OPT_FULLSCREEN 8UL
+#define OPT_MEDIAFIFO 16UL
+#define OPT_SOUND 32UL
+#define OPT_FLASH 64UL
+#define OPT_OVERLAY 128UL
+#define OPT_FLAT 256UL
+#define OPT_SIGNED 256UL
+#define OPT_DITHER 256UL
+#define OPT_CENTERX 512UL
+#define OPT_CENTERY 1024UL
+#define OPT_CENTER 1536UL
+#define OPT_FORMAT 4096UL
+#define OPT_NOBACK 4096UL
+#define OPT_FILL 8192UL
+#define OPT_NOHM 16384UL
+#define OPT_NOPOINTER 16384UL
+#define OPT_NOSECS 32768UL
+#define OPT_NOHANDS 49152UL
+#define OPT_NOTICKS 8192UL
+#define OPT_RIGHTX 2048UL
+
+// BT820
+#define OPT_4BIT 2UL
+#define OPT_BASELINE 32768UL
+#define OPT_CASESENSITIVE 2UL
+#define OPT_COMPLETEREG 4096UL
+#define OPT_DIRECT 2048UL
+#define OPT_DIRSEP_UNIX 8UL
+#define OPT_DIRSEP_WIN 4UL
+#define OPT_FS 8192UL
+#define OPT_HALFSPEED 4UL
+#define OPT_IS_MMC 16UL
+#define OPT_IS_SD 32UL
+#define OPT_NOKERN 16384UL
+#define OPT_QUARTERSPEED 8UL
+#define OPT_SFNLOWER 1UL
+#define OPT_SIMULATION 1UL
+#define OPT_TRUECOLOR 512UL
+#define OPT_YCBCR 1024UL
+#define OTP_CFG 2139097348UL
+#define OTP_CTL 2139097344UL
+#define OTP_LOCK 2139097356UL
+#define OTP_PRG_TIMING0 2139097360UL
+#define OTP_PRG_TIMING1 2139097364UL
+#define OTP_PRG_TIMING2 2139097368UL
+#define OTP_PRG_TIMING3 2139097372UL
+#define OTP_RBUFFER0 2139097408UL
+#define OTP_RBUFFER1 2139097412UL
+#define OTP_RBUFFER2 2139097416UL
+#define OTP_RBUFFER3 2139097420UL
+#define OTP_RD_TIMING 2139097376UL
+#define OTP_STATUS 2139097352UL
+#define OTP_WBUFFER0 2139097392UL
+#define OTP_WBUFFER1 2139097396UL
+#define OTP_WBUFFER2 2139097400UL
+#define OTP_WBUFFER3 2139097404UL
+ESD_END()
+
+#define ANIM_ONCE 0UL
+#define ANIM_LOOP 1UL
+#define ANIM_HOLD 2UL
+
+#define COMPRESSED_RGBA_ASTC_4x4_KHR 37808UL
+#define COMPRESSED_RGBA_ASTC_5x4_KHR 37809UL
+#define COMPRESSED_RGBA_ASTC_5x5_KHR 37810UL
+#define COMPRESSED_RGBA_ASTC_6x5_KHR 37811UL
+#define COMPRESSED_RGBA_ASTC_6x6_KHR 37812UL
+#define COMPRESSED_RGBA_ASTC_8x5_KHR 37813UL
+#define COMPRESSED_RGBA_ASTC_8x6_KHR 37814UL
+#define COMPRESSED_RGBA_ASTC_8x8_KHR 37815UL
+#define COMPRESSED_RGBA_ASTC_10x5_KHR 37816UL
+#define COMPRESSED_RGBA_ASTC_10x6_KHR 37817UL
+#define COMPRESSED_RGBA_ASTC_10x8_KHR 37818UL
+#define COMPRESSED_RGBA_ASTC_10x10_KHR 37819UL
+#define COMPRESSED_RGBA_ASTC_12x10_KHR 37820UL
+#define COMPRESSED_RGBA_ASTC_12x12_KHR 37821UL
+
+#define FLASH_DEFAULT_SHA1KEY 0xf589cf07
+
+#define KEEP 1UL
+#define REPLACE 2UL
+#define INCR 3UL
+#define DECR 4UL
+#define INVERT 5UL
+
+#define ZERO 0UL
+#define ONE 1UL
+#define SRC_ALPHA 2UL
+#define DST_ALPHA 3UL
+#define ONE_MINUS_SRC_ALPHA 4UL
+#define ONE_MINUS_DST_ALPHA 5UL
+
+#define RED 2UL
+#define GREEN 3UL
+#define BLUE 4UL
+#define ALPHA 5UL
+
+#define NEVER 0UL
+#define LESS 1UL
+#define LEQUAL 2UL
+#define GREATER 3UL
+#define GEQUAL 4UL
+#define EQUAL 5UL
+#define NOTEQUAL 6UL
+#define ALWAYS 7UL
+
+#define ARGB1555 0UL
+#define L1 1UL
+#define L4 2UL
+#define L8 3UL
+#define RGB332 4UL
+#define ARGB2 5UL
+#define ARGB4 6UL
+#define RGB565 7UL
+#define PALETTED 8UL
+#define TEXT8X8 9UL
+#define TEXTVGA 10UL
+#define BARGRAPH 11UL
+#define PALETTED565 14UL
+#define PALETTED4444 15UL
+#define PALETTED8 16UL
+#define L2 17UL
+#define GLFORMAT 31UL
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define RGB8 19UL
+#define ARGB8 20UL
+#define PALETTEDARGB8 21UL
+#define RGB6 22UL
+#define ARGB6 23UL
+#define LA1 24UL
+#define LA2 25UL
+#define LA4 26UL
+#define LA8 27UL
+#define YCBCR 28UL
+#endif
+
+#define FLASH_STATUS_INIT 0UL
+#define FLASH_STATUS_DETACHED 1UL
+#define FLASH_STATUS_BASIC 2UL
+#define FLASH_STATUS_FULL 3UL
+
+#define NEAREST 0UL
+#define BILINEAR 1UL
+
+#define LINEAR_SAMPLES 0UL
+#define ULAW_SAMPLES 1UL
+#define ADPCM_SAMPLES 2UL
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define S16_SAMPLES 3UL
+#define S16S_SAMPLES 4UL
+#endif
+
+#define BITMAPS 1UL
+#define POINTS 2UL
+#define LINES 3UL
+#define LINE_STRIP 4UL
+#define EDGE_STRIP_R 5UL
+#define EDGE_STRIP_L 6UL
+#define EDGE_STRIP_A 7UL
+#define EDGE_STRIP_B 8UL
+#define RECTS 9UL
+
+#define FTPOINTS POINTS
+
+#define TOUCHMODE_OFF 0UL
+#define TOUCHMODE_ONESHOT 1UL
+#define TOUCHMODE_FRAME 2UL
+#define TOUCHMODE_CONTINUOUS 3UL
+
+#define BORDER 0UL
+#define REPEAT 1UL
+
+#define ADC_SINGLE_ENDED 0UL
+#define ADC_DIFFERENTIAL 1UL
+
+#define CTOUCH_MODE_COMPATIBILITY 1UL
+#define CTOUCH_MODE_EXTENDED 0UL
+
+#define INT_SWAP 1UL
+#define INT_TOUCH 2UL
+#define INT_TAG 4UL
+#define INT_SOUND 8UL
+#define INT_L8C 12UL
+#define INT_VGA 13UL
+#define INT_G8 18UL
+#define INT_PLAYBACK 16UL
+#define INT_CMDEMPTY 32UL
+#define INT_CMDFLAG 64UL
+#define INT_CONVCOMPLETE 128UL
+#if !defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define INT_UNDERRUN 256UL
+#endif
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define CORNER_ZERO 0UL
+#define EDGE_ZERO 1UL
+#define SWAPCHAIN_0 4294902015UL
+#define SWAPCHAIN_1 4294902271UL
+#define SWAPCHAIN_2 4294902527UL
+#define TC_100KHZ 260UL
+#define TC_BENCH 262UL
+#define TC_DEVICE 259UL
+#define TC_ECHO 256UL
+#define TC_I2CSCAN 261UL
+#define TC_REGREAD 258UL
+#define TC_REGWRITE 257UL
+#define TOUCH_100KHZ 2048UL
+#define TOUCH_AR1021 3UL
+#define TOUCH_FOCALTECH 1UL
+#define TOUCH_GOODIX 2UL
+#define TOUCH_ILI2511 4UL
+#define TOUCH_QUICKSIM 32768UL
+#define TOUCH_TSC2007 5UL
+
+/* REVIEW: This seems duplicate? */
+#define SPI_WIDTH_1bit 0x000000 		/* SINGLE mode */
+#define SPI_WIDTH_2bit 0x000100 		/* DUAL mode */
+#define SPI_WIDTH_4bit 0X000200 		/* QUAD mode */
+
+#endif
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define BOOT_REGULAR 0UL
+#define BOOT_WARM 1UL
+#define BOOT_RAM0 2UL
+#define BOOT_SAFETY 3UL
+#define BOOT_FLASH 4UL
+#define BOOT_FLASHFAST 5UL
+#define BOOT_SD 6UL
+#define BOOT_HALT 7UL
+#define BOOT_AUD 32UL
+#define BOOT_JT 64UL
+#define BOOT_WD 16UL
+#define BOOT_DDR 128UL
+
+#endif
+
+
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+#define REG_LVDS_PLLCFG LVDSPLL_CFG
+#define REG_LVDS_CFG LVDS_CFG
+#define REG_LVDS_CTRL_CH0 LVDS_CTRL_CH0
+#define REG_LVDS_CTRL_CH1 LVDS_CTRL_CH1
+#define REG_LVDS_EN LVDS_EN
+#define REG_LVDS_ERR_STAT LVDS_ERR_STAT
+#define REG_LVDS_STAT LVDS_STAT
+#define REG_LVDS_TGEN_HCFG_0 LVDS_TGEN_HCFG_0
+#define REG_LVDS_TGEN_HCFG_1 LVDS_TGEN_HCFG_1
+#define REG_LVDS_TGEN_HCFG_2 LVDS_TGEN_HCFG_2
+#define REG_LVDS_TGEN_VCFG_0 LVDS_TGEN_VCFG_0
+#define REG_LVDS_TGEN_VCFG_1 LVDS_TGEN_VCFG_1
+#define REG_LVDS_TGEN_VCFG_2 LVDS_TGEN_VCFG_2
+#define REG_I2S_CFG I2S_CFG
+#define REG_I2S_CTL I2S_CTL
+#define REG_I2S_FIFO I2S_FIFO
+#define REG_I2S_IRQ_EN I2S_IRQ_EN
+#define REG_I2S_IRQ_STAT I2S_IRQ_STAT
+#define REG_I2S_STAT I2S_STAT
+#endif
+
+// Address where register area starts
+#if defined(BT_82X_ENABLE)
+#define EVE_REG_BASE (EVE_CHIPID >= EVE_BT820 ? RAM_CMD : RAM_DL)
+#else
+#define EVE_REG_BASE RAM_DL
+#endif
+
+// Address for ROM font 16 to 34
+static inline uint32_t EVE_Hal_romFontAddress(EVE_HalContext *phost, uint32_t romFont)
+{
+#if defined(BT_82X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
+	if (EVE_CHIPID >= EVE_BT820)
+	{
+		const uint32_t ramSize = phost->RamGSize; 
+		const uint32_t fontRoots = ramSize - 0x100; // 256 bytes from the top
+		const uint32_t romFontAddr = EVE_Hal_rd32(phost, fontRoots + (romFont * 4));
+		// const uint32_t heightAddr = romFontAddr + (uint32_t)(uintptr_t)(&(((EVE_Gpu_Fonts *)(void *)0)->FontHeightInPixels));
+		// const uint32_t fontHeight = EVE_Hal_rd32(phost, heightAddr);
+		return romFontAddr;
+	}
+#endif
+	{
+		const uint32_t romFontTableAddr = EVE_Hal_rd32(phost, ROMFONT_TABLEADDRESS);
+		const uint32_t romFontAddr = romFontTableAddr + (EVE_GPU_FONT_TABLE_SIZE * (romFont - 16));
+		return romFontAddr;
+	}
+}
+
+#endif /* #ifndef EVE_GPU_DEFS__H */
+
+/* end of file */
