@@ -126,10 +126,13 @@ extern "C" {
 #define eve_deprecated(msg)
 #endif
 
-#include <zephyr/kernel.h>
 
 #ifndef eve_printf
+#if defined(ZEPHYR_PLATFORM)
 #define eve_printf(fmt, ...) printk(fmt, ##__VA_ARGS__)
+#else
+#define eve_printf(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#endif
 #endif
 
 #ifndef eve_sprintf
@@ -138,10 +141,6 @@ extern "C" {
 
 #ifndef eve_sprintf_s
 #define eve_sprintf_s(str, size, fmt, ...) sprintf_s(str, size, fmt, ##__VA_ARGS__)
-#endif
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
