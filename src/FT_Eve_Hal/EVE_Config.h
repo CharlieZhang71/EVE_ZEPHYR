@@ -266,10 +266,14 @@ Additionally, the following support flags are set:
 
 */
 
-#define EVE_SUPPORT_CHIPID  EVE_BT817
-
 ///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
+//TODO: added, since cannot imply from elsewhere
+#define EVE_GRAPHICS_ME817EV
+#define EVE_DISPLAY_WXGA
+#define EVE_PLATFORM_ZEPHYR
+#define EVE_TOUCH_FOCAL
+#define BT817_ENABLE
+#define ZEPHYR_PLATFORM
 ///////////////////////////////////////////////////////////////////////
 
 /*
@@ -323,14 +327,12 @@ Remap manual use of internal macros, internal macros are mapped at the end of th
 #define EVE_PLATFORM_FT4222
 #endif
 
-#define EVE_GRAPHICS_ME817EV
-
 /*
 
 Validate the configured options.
 
 */
-#if defined(VM800B35A_BK) || defined(VM800B43A_BK)                   \
+/*#if defined(VM800B35A_BK) || defined(VM800B43A_BK)                   \
     || defined(VM800B50A_BK) || defined(VM801B43A_BK)                \
     || defined(VM801B50A_BK) || defined(VM800C35A_N)                 \
     || defined(VM800C43A_N) || defined(VM800C35A_D)                  \
@@ -360,10 +362,11 @@ Validate the configured options.
 	|| defined(EVE_GRAPHICS_IDP_4000_04A) || defined(EVE_GRAPHICS_IDP_3500_04A)  \
 	|| defined(EVE_GRAPHICS_IDP_5000_04A) \
     || defined(EVE_GRAPHICS_IDM2040_21R)
+#define EVE_GRAPHICS_AVAILABLE      ??
+#endif*/ 
 #define EVE_GRAPHICS_AVAILABLE
-#endif
 
-#if defined(EVE_DISPLAY_QVGA) || defined(EVE_DISPLAY_WQVGA)    \
+/*#if defined(EVE_DISPLAY_QVGA) || defined(EVE_DISPLAY_WQVGA)    \
 	|| defined(EVE_DISPLAY_WQVGA_SQ)                           \
     || defined(EVE_DISPLAY_WVGA) || defined(EVE_DISPLAY_WSVGA) \
     || defined(EVE_DISPLAY_WXGA) || defined(EVE_DISPLAY_WUXGA) \
@@ -371,13 +374,11 @@ Validate the configured options.
     || defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)              \
     || defined(EVE_DISPLAY_KD2401_HVGA_PORTRAIT)               \
     || defined(EVE_DISPLAY_HVGA)
+#define EVE_DISPLAY_AVAILABLE       ??
+#endif*/
 #define EVE_DISPLAY_AVAILABLE
-#endif
 
-#define EVE_PLATFORM_ZEPHYR
-
-
-#if defined(ESD_SIMULATION) || defined(EVE_PLATFORM_BT8XXEMU)      \
+/*#if defined(ESD_SIMULATION) || defined(EVE_PLATFORM_BT8XXEMU)      \
     || defined(MM900EV1A) || defined(MM900EV1B)                    \
     || defined(MM900EV2A) || defined(MM900EV3A)                    \
     || defined(MM900EV_LITE) || defined(MM930MINI)                 \
@@ -385,10 +386,11 @@ Validate the configured options.
     || defined(EVE_PLATFORM_FT4222) || defined(EVE_PLATFORM_MPSSE) \
     || defined(EVE_PLATFORM_RP2040) || defined(EVE_PLATFORM_MM2040EV) \
 	|| defined(EVE_PLATFORM_ZEPHYR)
+#define EVE_PLATFORM_AVAILABLE      ??
+#endif*/
 #define EVE_PLATFORM_AVAILABLE
-#endif
 
-#if defined(EVE_FLASH_W25Q16) || defined(EVE_FLASH_W25Q32)        \
+/*#if defined(EVE_FLASH_W25Q16) || defined(EVE_FLASH_W25Q32)        \
     || defined(EVE_FLASH_W25Q64) || defined(EVE_FLASH_W25Q128)    \
 	|| defined(EVE_FLASH_W25N01GV)								  \
     || defined(EVE_FLASH_MX25L16) || defined(EVE_FLASH_MX25L32)   \
@@ -396,15 +398,18 @@ Validate the configured options.
     || defined(EVE_FLASH_MX25L256) || defined(EVE_FLASH_MX25L512) \
     || defined(EVE_FLASH_MX25L1024) || defined(EVE_FLASH_MX25L2048)
 #define EVE_FLASH_AVAILABLE
-#endif
+#endif*/
+//#define EVE_FLASH_AVAILABLE
 
-#if defined(EVE_TOUCH_FOCAL) || defined(EVE_TOUCH_GOODIX) || defined(EVE_TOUCH_RESISTIVE) || defined(EVE_TOUCH_DISABLED)
+/*#if defined(EVE_TOUCH_FOCAL) || defined(EVE_TOUCH_GOODIX) || defined(EVE_TOUCH_RESISTIVE) || defined(EVE_TOUCH_DISABLED)
+#define EVE_TOUCH_AVAILABLE     ??
+#endif*/
 #define EVE_TOUCH_AVAILABLE
-#endif
 
-#if !defined(EVE_PLATFORM_AVAILABLE) && (defined(WIN32) || defined(__linux__))
+/*#if !defined(EVE_PLATFORM_AVAILABLE) && (defined(WIN32) || defined(__linux__))
 #define EVE_MULTI_PLATFORM_TARGET
-#endif
+#endif*/
+//#define EVE_MULTI_PLATFORM_TARGET
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -839,7 +844,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_ME817EV) && defined(EVE_PLATFORM_ZEPHYR)
 
-#define BT817_ENABLE
+#define BT817_ENABLE        //??? move to top
 
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
@@ -1446,9 +1451,10 @@ It may also set platform, display, and flash values if none are configured.
 #endif
 
 /// Re-Mapping BT817 Series to BT81XA
-#if defined(BT817_ENABLE) || defined(BT818_ENABLE)
+/*#if defined(BT817_ENABLE) || defined(BT818_ENABLE)
+#define BT81XA_ENABLE   ??
+#endif*/
 #define BT81XA_ENABLE
-#endif
 
 /// Re-Mapping BT820 Series to BT82X
 #if defined(BT820_ENABLE)
@@ -1456,7 +1462,7 @@ It may also set platform, display, and flash values if none are configured.
 #endif
 
 /// Model numbered macro for versioning convenience.
-#if defined(FT800_ENABLE)
+/*#if defined(FT800_ENABLE)
 #define EVE_SUPPORT_CHIPID EVE_FT800
 #define EVE_SUPPORT_GEN EVE1
 #define FT_800_ENABLE
@@ -1505,9 +1511,9 @@ It may also set platform, display, and flash values if none are configured.
 #define EVE_SUPPORT_GEN EVE3
 #define BT_816_ENABLE
 #elif defined(BT817_ENABLE)
-#define EVE_SUPPORT_CHIPID EVE_BT817
-#define EVE_SUPPORT_GEN EVE4
-#define BT_817_ENABLE
+#define EVE_SUPPORT_CHIPID EVE_BT817    ??
+#define EVE_SUPPORT_GEN EVE4            ??
+#define BT_817_ENABLE                   ??
 #elif defined(BT818_ENABLE)
 #define EVE_SUPPORT_CHIPID EVE_BT818
 #define EVE_SUPPORT_GEN EVE4
@@ -1516,9 +1522,13 @@ It may also set platform, display, and flash values if none are configured.
 #define EVE_SUPPORT_CHIPID EVE_BT820
 #define EVE_SUPPORT_GEN EVE5
 #define BT_820_ENABLE
-#endif
+#endif*/
+#define EVE_SUPPORT_CHIPID EVE_BT817
+#define EVE_SUPPORT_GEN EVE4
+#define BT_817_ENABLE
 
-#if defined(FT80X_ENABLE)
+
+/*#if defined(FT80X_ENABLE)
 #define FT_80X_ENABLE
 #elif defined(FT81X_ENABLE)
 #define FT_81X_ENABLE
@@ -1527,16 +1537,17 @@ It may also set platform, display, and flash values if none are configured.
 #elif defined(BT81X_ENABLE)
 #define BT_81X_ENABLE
 #elif defined(BT81XA_ENABLE)
-#define BT_81XA_ENABLE
+#define BT_81XA_ENABLE      ??
 #elif defined(BT82X_ENABLE)
 #define BT_82X_ENABLE
-#endif
+#endif*/
+#define BT_81XA_ENABLE
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(EVE_DISPLAY_QVGA)
+/*#if defined(EVE_DISPLAY_QVGA)
 #define DISPLAY_RESOLUTION_QVGA
 #elif defined(EVE_DISPLAY_WQVGA)
 #define DISPLAY_RESOLUTION_WQVGA
@@ -1547,7 +1558,7 @@ It may also set platform, display, and flash values if none are configured.
 #elif defined(EVE_DISPLAY_WSVGA)
 #define DISPLAY_RESOLUTION_WSVGA
 #elif defined(EVE_DISPLAY_WXGA)
-#define DISPLAY_RESOLUTION_WXGA
+#define DISPLAY_RESOLUTION_WXGA     ??
 #elif defined(EVE_DISPLAY_HDTV)
 #define DISPLAY_RESOLUTION_HDTV
 #elif defined(EVE_DISPLAY_FHD)
@@ -1562,7 +1573,8 @@ It may also set platform, display, and flash values if none are configured.
 #elif defined(EVE_DISPLAY_KD2401_HVGA_PORTRAIT)
 #define DISPLAY_RESOLUTION_HVGA_PORTRAIT
 #define ENABLE_KD2401_HVGA_PORTRAIT
-#endif
+#endif*/
+#define DISPLAY_RESOLUTION_WXGA
 
 #ifndef EVE_DISPLAY_REFRESH
 #define EVE_DISPLAY_REFRESH 0
@@ -1677,7 +1689,7 @@ These may only be set by one of the platform target definitions, and should not 
 #define MPSSE_PLATFORM
 
 #elif defined(EVE_PLATFORM_ZEPHYR)
-#define ZEPHYR_PLATFORM	
+#define ZEPHYR_PLATFORM             //?? bring to top	
 					   
 #elif defined(EVE_PLATFORM_RP2040) || defined(EVE_PLATFORM_MM2040EV)
 #define RP2040_PLATFORM
@@ -1700,10 +1712,12 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_HOST EVE_HOST_EMBEDDED
 #endif
 
-#if defined(ZEPHYR_PLATFORM)
+/*#if defined(ZEPHYR_PLATFORM)
+#define EMBEDDED_PLATFORM  ??
+#define EVE_HOST EVE_HOST_EMBEDDED  ??
+#endif*/	  
 #define EMBEDDED_PLATFORM
 #define EVE_HOST EVE_HOST_EMBEDDED
-#endif	  
 
 #if defined(RP2040_PLATFORM)
 #define EMBEDDED_PLATFORM
@@ -1717,14 +1731,15 @@ These may only be set by one of the platform target definitions, and should not 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(FT9XX_PLATFORM)       \
+/*#if defined(FT9XX_PLATFORM)       \
     || defined(FT4222_PLATFORM)   \
 	|| defined(ZEPHYR_PLATFORM)    \
     || defined(MPSSE_PLATFORM)    \
     || defined(BT8XXEMU_PLATFORM) \
     || defined(RP2040_PLATFORM)
+#define EVE_PLATFORM_AVAILABLE  ??
+#endif*/
 #define EVE_PLATFORM_AVAILABLE
-#endif
 
 #if defined(EVE_MULTI_PLATFORM_TARGET) && defined(EVE_PLATFORM_AVAILABLE)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
@@ -1782,7 +1797,7 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_HOST phost->Host
 #endif
 #endif
-#ifdef EVE_MULTI_GRAPHICS_TARGET
+/*#ifdef EVE_MULTI_GRAPHICS_TARGET
 #define EVE_FLASH_AVAILABLE
 #define EVE_SUPPORT_HSF
 #define EVE_SUPPORT_FLASH
@@ -1804,9 +1819,11 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_GEN EVE_gen(EVE_CHIPID)
 #endif
 #else
+#define EVE_CHIPID EVE_SUPPORT_CHIPID   ??
+#define EVE_GEN EVE_SUPPORT_GEN         ??
+#endif*/
 #define EVE_CHIPID EVE_SUPPORT_CHIPID
 #define EVE_GEN EVE_SUPPORT_GEN
-#endif
 
 #if (EVE_SUPPORT_CHIPID >= EVE_BT820)
 #ifndef EVE_OSC_FREQ
@@ -1817,17 +1834,21 @@ These may only be set by one of the platform target definitions, and should not 
 // Macros to simplify support ranges
 // If we are building in multi-graphics, EVE_SUPPORT_CHIPID will always be the highest gen support that's been enabled
 // If we are building in single graphics target, EVE_SUPPORT_CHIPID will be the exact gen that we are running on
-#ifdef EVE_MULTI_GRAPHICS_TARGET
-#define EVE_SUPPORT_CHIPID_FROM(chipId) (EVE_SUPPORT_CHIPID >= chipId) /**< Feature is supported as of the given chip id */
-#define EVE_SUPPORT_CHIPID_TO(chipId) (1) /**< To, exclusive */
-#define EVE_SUPPORT_CHIPID_RANGE(chipIdFrom, chipIdTo) (EVE_SUPPORT_CHIPID >= chipIdFrom) /** Range, from inclusive, to exclusive */
-#define EVE_SUPPORT_CHIPID_SPECIFIC(chipId) (EVE_SUPPORT_CHIPID >= chipId) /**< Feature is supported only on the given chip id */
-#else
+//#ifdef EVE_MULTI_GRAPHICS_TARGET
+//#define EVE_SUPPORT_CHIPID_FROM(chipId) (EVE_SUPPORT_CHIPID >= chipId) /**< Feature is supported as of the given chip id */
+//#define EVE_SUPPORT_CHIPID_TO(chipId) (1) /**< To, exclusive */
+//#define EVE_SUPPORT_CHIPID_RANGE(chipIdFrom, chipIdTo) (EVE_SUPPORT_CHIPID >= chipIdFrom) /** Range, from inclusive, to exclusive */
+//#define EVE_SUPPORT_CHIPID_SPECIFIC(chipId) (EVE_SUPPORT_CHIPID >= chipId) /**< Feature is supported only on the given chip id */
+//#else
+//#define EVE_SUPPORT_CHIPID_FROM(chipId) (EVE_SUPPORT_CHIPID >= chipId) /**< Feature is supported as of the given chip id */
+//#define EVE_SUPPORT_CHIPID_TO(chipId) (EVE_SUPPORT_CHIPID < chipId) /**< To, exclusive */
+//#define EVE_SUPPORT_CHIPID_RANGE(chipIdFrom, chipIdTo) ((EVE_SUPPORT_CHIPID >= chipIdFrom) && (EVE_SUPPORT_CHIPID < chipIdTo)) /** Range, from inclusive, to exclusive */
+//#define EVE_SUPPORT_CHIPID_SPECIFIC(chipId) (EVE_SUPPORT_CHIPID == chipId) /**< Feature is supported only on the given chip id */
+//#endif 
 #define EVE_SUPPORT_CHIPID_FROM(chipId) (EVE_SUPPORT_CHIPID >= chipId) /**< Feature is supported as of the given chip id */
 #define EVE_SUPPORT_CHIPID_TO(chipId) (EVE_SUPPORT_CHIPID < chipId) /**< To, exclusive */
 #define EVE_SUPPORT_CHIPID_RANGE(chipIdFrom, chipIdTo) ((EVE_SUPPORT_CHIPID >= chipIdFrom) && (EVE_SUPPORT_CHIPID < chipIdTo)) /** Range, from inclusive, to exclusive */
 #define EVE_SUPPORT_CHIPID_SPECIFIC(chipId) (EVE_SUPPORT_CHIPID == chipId) /**< Feature is supported only on the given chip id */
-#endif
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -1842,9 +1863,12 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_SUPPORT_LVDS /* PCLK derived from OSC * SYSPLL / TXCLKDIV / 2 */
 #define EVE_SUPPORT_RENDERTARGET
 #endif
-#if ((EVE_SUPPORT_CHIPID >= EVE_BT817) && (EVE_SUPPORT_CHIPID < EVE_BT820)) 
+
+/*#if ((EVE_SUPPORT_CHIPID >= EVE_BT817) && (EVE_SUPPORT_CHIPID < EVE_BT820)) 
+#define EVE_SUPPORT_HSF   ??
+#endif */
 #define EVE_SUPPORT_HSF /* PCLK derived from REG_PCLK_FREQ register */
-#endif
+
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 #define EVE_SUPPORT_FLASH
 #define EVE_SUPPORT_UNICODE
@@ -1859,16 +1883,17 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_SUPPORT_LARGEFONT
 #endif
 #endif
-#ifndef EVE_MULTI_GRAPHICS_TARGET
+/*#ifndef EVE_MULTI_GRAPHICS_TARGET
 #if (EVE_SUPPORT_CHIPID >= EVE_BT820)
 #define EVE_SUPPORT_CAPACITIVE
 #define EVE_SUPPORT_RESISTIVE
 #elif ((EVE_SUPPORT_CHIPID & 0x01) == 0x01)
-#define EVE_SUPPORT_CAPACITIVE
+#define EVE_SUPPORT_CAPACITIVE      ??
 #else
 #define EVE_SUPPORT_RESISTIVE
 #endif
-#endif
+#endif*/
+#define EVE_SUPPORT_CAPACITIVE
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -1880,14 +1905,16 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_DL_OPTIMIZE 1 /* Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size */
 #define EVE_DL_CACHE_SCISSOR 1 /* Keep cache of current scissor */
 #define EVE_DL_END_PRIMITIVE 0 /* Whether the END command is sent */
-#if (EVE_SUPPORT_CHIPID >= EVE_BT820)
-/* Extended state stack to account for recursive render target switching convenience tricks */
+/*#if (EVE_SUPPORT_CHIPID >= EVE_BT820)
+// Extended state stack to account for recursive render target switching convenience tricks 
 #define EVE_DL_STATE_STACK_SIZE 16
 #define EVE_DL_STATE_STACK_MASK 15
 #else
 #define EVE_DL_STATE_STACK_SIZE 4
 #define EVE_DL_STATE_STACK_MASK 3
-#endif
+#endif*/
+#define EVE_DL_STATE_STACK_SIZE 4
+#define EVE_DL_STATE_STACK_MASK 3
 
 #define EVE_CMD_CACHE_RENDER_TARGET 1 /* Keep cache of current rendertarget */	
 #define EVE_CMD_HOOKS 0 /* Allow adding a callback hook into EVE_CoCmd calls using CoCmdHook in EVE_HalContext */
